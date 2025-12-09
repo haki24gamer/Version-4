@@ -1,0 +1,40 @@
+{
+  "presets": {
+    "static": {
+      "label": "Statique (Bureau/Maison)",
+      "speed": 0,
+      "brightness": 50,
+      "noise": 20
+    },
+    "walking": {
+      "label": "Marche",
+      "speed": 5,
+      "brightness": 70,
+      "noise": 40
+    },
+    "cycling": {
+      "label": "Vélo",
+      "speed": 20,
+      "brightness": 90,
+      "noise": 60
+    },
+    "bus": {
+      "label": "Bus",
+      "speed": 40,
+      "brightness": 40,
+      "noise": 75
+    },
+    "metro": {
+      "label": "Métro",
+      "speed": 60,
+      "brightness": 20,
+      "noise": 85
+    },
+    "car": {
+      "label": "Voiture (Passager)",
+      "speed": 90,
+      "brightness": 50,
+      "noise": 50
+    }
+  }
+}

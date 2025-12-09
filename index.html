@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation UI Adaptative - Transport</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- Panneau de Contrôle (Simulation du Contexte) -->
+        <aside class="control-panel">
+            <h2>🎛️ Simulation de Contexte</h2>
+            <p>Modifiez les paramètres pour voir l'UI s'adapter.</p>
+
+            <div class="control-group">
+                <label for="transport-select">Type de Transport</label>
+                <select id="transport-select">
+                    <option value="custom">Personnalisé</option>
+                    <!-- Options chargées via JS -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="speed-range">Vitesse (<span id="speed-val">0</span> km/h)</label>
+                <input type="range" id="speed-range" min="0" max="120" value="0">
+                <div class="range-labels">
+                    <span>0</span><span>120</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="brightness-range">Luminosité (<span id="brightness-val">50</span>%)</label>
+                <input type="range" id="brightness-range" min="0" max="100" value="50">
+                <div class="range-labels">
+                    <span>Sombre</span><span>Lumineux</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="noise-range">Bruit Ambiant (<span id="noise-val">30</span> dB)</label>
+                <input type="range" id="noise-range" min="0" max="120" value="30">
+                <div class="range-labels">
+                    <span>Calme</span><span>Bruyant</span>
+                </div>
+            </div>
+
+            <div class="indicators">
+                <h3>État détecté :</h3>
+                <ul>
+                    <li id="state-movement">🛑 À l'arrêt</li>
+                    <li id="state-light">🔅 Luminosité normale</li>
+                    <li id="state-ui">📱 UI Standard</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Zone de Simulation (L'application Mockup) -->
+        <main class="simulation-area">
+            <div class="phone-mockup" id="app-ui">
+                <div class="status-bar">
+                    <span class="time">12:30</span>
+                    <span class="icons">📶 🔋</span>
+                </div>
+                
+                <div class="app-header">
+                    <h1>Mon Trajet</h1>
+                    <button class="icon-btn">⚙️</button>
+                </div>
+
+                <div class="app-content">
+                    <div class="info-card">
+                        <h2>Prochain arrêt</h2>
+                        <p class="station-name">Gare Centrale</p>
+                        <p class="eta">Arrivée dans <span class="highlight">5 min</span></p>
+                    </div>
+
+                    <div class="actions-grid">
+                        <button class="action-btn primary">
+                            <span class="icon">🗺️</span>
+                            <span class="label">Itinéraire</span>
+                        </button>
+                        <button class="action-btn secondary">
+                            <span class="icon">🎫</span>
+                            <span class="label">Billets</span>
+                        </button>
+                        <button class="action-btn secondary">
+                            <span class="icon">⚠️</span>
+                            <span class="label">Signalement</span>
+                        </button>
+                    </div>
+
+                    <div class="audio-feedback" id="audio-feedback">
+                        <span class="icon">🔊</span>
+                        <div class="volume-bar-container">
+                            <div class="volume-bar" id="volume-bar"></div>
+                        </div>
+                        <span class="label">Volume adaptatif</span>
+                    </div>
+                    
+                    <div class="text-content">
+                        <p>Informations trafic : Fluide sur l'ensemble de la ligne. Aucun incident signalé.</p>
+                    </div>
+                </div>
+
+                <div class="navigation-bar">
+                    <button class="nav-item active">🏠 Accueil</button>
+                    <button class="nav-item">🔍 Recherche</button>
+                    <button class="nav-item">👤 Profil</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
