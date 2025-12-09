@@ -12,6 +12,8 @@
     --app-card-bg: #f8f9fa;
     --app-btn-primary: #3498db;
     --app-btn-text: #ffffff;
+    --audio-bg: #f0f0f0;
+    --nav-text: #95a5a6;
     --base-font-size: 16px;
     --btn-padding: 12px;
     --btn-icon-size: 24px;
@@ -195,6 +197,7 @@ body {
 .action-btn {
     border: none;
     background: var(--secondary-color);
+    color: var(--app-text);
     padding: var(--btn-padding);
     border-radius: var(--border-radius);
     display: flex;
@@ -221,7 +224,7 @@ body {
 }
 
 .audio-feedback {
-    background: #f0f0f0;
+    background: var(--audio-bg);
     padding: 15px;
     border-radius: var(--border-radius);
     display: flex;
@@ -261,7 +264,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    color: #95a5a6;
+    color: var(--nav-text);
     cursor: pointer;
 }
 
@@ -289,7 +292,7 @@ body {
     display: none; /* Hide non-essential text */
 }
 
-.mode-moving .nav-item span {
+.mode-moving .nav-label {
     display: none; /* Hide labels in nav, keep icons */
 }
 
@@ -306,9 +309,12 @@ body {
     --app-btn-text: #000000;
     --secondary-color: #333333;
     --primary-color: #ffff00;
+    --audio-bg: #000000;
+    --nav-text: #ffff00;
 }
 
-.mode-high-contrast .info-card {
+.mode-high-contrast .info-card,
+.mode-high-contrast .audio-feedback {
     border: 2px solid #ffffff;
 }
 
@@ -323,12 +329,20 @@ body {
     --app-text: #e0e0e0;
     --app-card-bg: #2d2d2d;
     --secondary-color: #404040;
+    --audio-bg: #2d2d2d;
+    --nav-text: #bdc3c7;
 }
 
 /* 4. High Noise Mode */
 .mode-noisy .audio-feedback {
     border: 2px solid var(--accent-color);
     background: #ffebee;
+    color: #333;
+}
+
+.mode-dark.mode-noisy .audio-feedback {
+    background: #5c0000;
+    color: #fff;
 }
 
 .mode-noisy .volume-bar {
