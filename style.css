@@ -277,27 +277,53 @@ body {
    ADAPTIVE UI STATES (CSS Classes)
    ========================================= */
 
-/* 1. High Speed / Movement Mode */
-.mode-moving {
+/* --- Speed Adaptations --- */
+
+/* Level 1: Moderate Speed (10-30 km/h) - Comfort */
+.mode-speed-1 {
+    --base-font-size: 18px;
+    --btn-padding: 16px;
+    --btn-icon-size: 28px;
+}
+
+/* Level 2: Fast Speed (30-70 km/h) - Simplified */
+.mode-speed-2 {
     --base-font-size: 20px;
     --btn-padding: 20px;
     --btn-icon-size: 32px;
 }
-
-.mode-moving .actions-grid {
-    grid-template-columns: 1fr; /* Stack buttons for easier clicking */
+.mode-speed-2 .actions-grid {
+    grid-template-columns: 1fr; /* Stack buttons */
+}
+.mode-speed-2 .text-content {
+    display: none;
+}
+.mode-speed-2 .nav-label {
+    display: none;
+}
+.mode-speed-2 .nav-item {
+    font-size: 1.5em;
 }
 
-.mode-moving .text-content {
-    display: none; /* Hide non-essential text */
+/* Level 3: Very Fast (> 70 km/h) - Max Visibility */
+.mode-speed-3 {
+    --base-font-size: 24px;
+    --btn-padding: 24px;
+    --btn-icon-size: 40px;
 }
-
-.mode-moving .nav-label {
-    display: none; /* Hide labels in nav, keep icons */
+.mode-speed-3 .actions-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
 }
-
-.mode-moving .nav-item {
-    font-size: 1.5em; /* Bigger icons */
+.mode-speed-3 .text-content,
+.mode-speed-3 .nav-label {
+    display: none;
+}
+.mode-speed-3 .nav-item {
+    font-size: 2em;
+}
+.mode-speed-3 .action-btn {
+    border-width: 3px;
 }
 
 /* 2. High Brightness / High Contrast Mode */
@@ -719,27 +745,101 @@ body {
     border: 1px solid #fff;
 }
 
-.mode-moving .map-marker {
+/* Map Speed Adaptations */
+.mode-speed-2 .map-marker,
+.mode-speed-3 .map-marker {
     width: 40px;
     height: 40px;
-    font-size: 30px; /* Bigger icons */
+    font-size: 30px;
 }
 
-.mode-moving .map-marker-label {
-    font-size: 14px; /* Bigger text */
+.mode-speed-3 .map-marker {
+    width: 50px;
+    height: 50px;
+    font-size: 36px;
+}
+
+.mode-speed-2 .map-marker-label,
+.mode-speed-3 .map-marker-label {
+    font-size: 14px;
     padding: 4px 8px;
 }
 
-.mode-moving .interactive-map-container {
-    overflow: auto; /* Enable scroll */
+.mode-speed-2 .interactive-map-container,
+.mode-speed-3 .interactive-map-container {
+    overflow: auto;
 }
 
-.mode-moving .map-scroll-wrapper {
-    width: 180%; /* Zoom in */
-    height: 180%;
+.mode-speed-2 .map-scroll-wrapper {
+    width: 150%;
+    height: 150%;
 }
 
-.mode-moving.mode-high-contrast .interactive-map-container {
+.mode-speed-3 .map-scroll-wrapper {
+    width: 200%;
+    height: 200%;
+}
+
+.mode-speed-3.mode-high-contrast .interactive-map-container {
     background-color: #000;
 }
 
+
+/* Map Zoom Controls */
+.map-container-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.map-zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+
+.zoom-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+}
+
+.zoom-btn:hover {
+    background: #fff;
+}
+
+.zoom-btn:active {
+    background: #eee;
+    transform: scale(0.95);
+}
+
+/* High Contrast Zoom Buttons */
+.mode-high-contrast .zoom-btn {
+    background: #000;
+    color: #fff;
+    border: 2px solid #fff;
+}
+
+.mode-high-contrast .zoom-btn:hover {
+    background: #333;
+}
+
+/* Speed Mode Adaptations for Zoom Buttons */
+.mode-speed-2 .zoom-btn,
+.mode-speed-3 .zoom-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+}

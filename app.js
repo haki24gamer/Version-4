@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDestination = null; // Store current destination
     let lastState = {
         moving: false,
+        speedLevel: 0,
         highContrast: false,
         dark: false,
         noisy: false,
@@ -108,17 +109,30 @@ document.addEventListener('DOMContentLoaded', () => {
         appUi.className = 'phone-mockup'; // Keep base class
         
         // State Detection
-        const isMoving = speed > 15;
+        let speedLevel = 0;
+        if (speed > 10 && speed <= 30) speedLevel = 1;
+        else if (speed > 30 && speed <= 70) speedLevel = 2;
+        else if (speed > 70) speedLevel = 3;
+
+        const isMoving = speed > 10;
         const isHighContrast = brightness > 80;
         const isDark = brightness < 30;
         const isNoisy = noise > 70;
         const isBatteryLow = battery < 20;
 
         // 1. Speed Adaptation
-        if (isMoving) {
-            appUi.classList.add('mode-moving');
-            stateMovement.textContent = '🏃 En mouvement (UI Simplifiée)';
-            stateUi.textContent = '🔍 Gros boutons / Texte large';
+        if (speedLevel === 1) {
+            appUi.classList.add('mode-speed-1');
+            stateMovement.textContent = '🚶 Vitesse modérée (UI Confort)';
+            stateUi.textContent = '🔍 Texte agrandi';
+        } else if (speedLevel === 2) {
+            appUi.classList.add('mode-speed-2');
+            stateMovement.textContent = '🏃 Vitesse rapide (UI Simplifiée)';
+            stateUi.textContent = '🔍 Gros boutons / 1 colonne';
+        } else if (speedLevel === 3) {
+            appUi.classList.add('mode-speed-3');
+            stateMovement.textContent = '🚀 Grande vitesse (UI Max)';
+            stateUi.textContent = '🔍 Interface XXL / Zoom Max';
         } else {
             stateMovement.textContent = '🛑 À l\'arrêt';
             stateUi.textContent = '📱 UI Standard';
@@ -165,8 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 6. Explanatory Mode (Feedback)
         if (toggleExplanations.checked) {
             // Speed
-            if (isMoving && !lastState.moving) showToast("🎓 Vitesse > 15km/h : Interface simplifiée pour la sécurité");
-            else if (!isMoving && lastState.moving) showToast("ℹ️ Vitesse normale : Retour à l'interface standard");
+            if (speedLevel !== lastState.speedLevel) {
+                if (speedLevel === 1) showToast("🎓 Vitesse modérée : Texte agrandi pour le confort");
+                else if (speedLevel === 2) showToast("🎓 Vitesse rapide : Interface simplifiée (1 colonne)");
+                else if (speedLevel === 3) showToast("🎓 Grande vitesse : Interface XXL pour sécurité max");
+                else if (speedLevel === 0 && lastState.speedLevel > 0) showToast("ℹ️ Arrêt : Retour à l'interface standard");
+            }
 
             // Brightness
             if (isHighContrast && !lastState.highContrast) showToast("🎓 Luminosité forte : Contraste augmenté");
@@ -187,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update last state
         lastState = {
             moving: isMoving,
+            speedLevel: speedLevel,
             highContrast: isHighContrast,
             dark: isDark,
             noisy: isNoisy,
@@ -258,27 +277,76 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentMarker = createMarker(currentPos.x, currentPos.y, "🔵", currentPos.label, "current");
         wrapper.appendChild(currentMarker);
 
-        // 3. Render POIs
-        mapData.pois.forEach(poi => {
-            let icon = "📍";
-            if (poi.type === "transport") icon = "🚆";
-            if (poi.type === "culture") icon = "🏛️";
-            if (poi.type === "nature") icon = "🌳";
-            if (poi.type === "shop") icon = "🛒";
+        // 4. Handle Map Interaction (Drag to Scroll vs Click to Select)
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+        let mouseDownTime;
 
-            const marker = createMarker(poi.x, poi.y, icon, poi.label, "poi");
+        // Mouse Down / Touch Start
+        const onPointerDown = (e) => {
+            isDragging = false;
+            mouseDownTime = new Date().getTime();
+            const pageX = e.pageX || e.touches[0].pageX;
+            const pageY = e.pageY || e.touches[0].pageY;
             
-            // Click event to set destination
-            marker.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent map click
-                selectDestination(poi, wrapper);
-            });
+            startX = pageX - container.offsetLeft;
+            startY = pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            scrollTop = container.scrollTop;
+            
+            // Only enable drag scrolling if content is larger than container
+            if (container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth) {
+                container.style.cursor = 'grabbing';
+            }
+        };
 
-            wrapper.appendChild(marker);
-        });
+        // Mouse Move / Touch Move
+        const onPointerMove = (e) => {
+            // If mouse is not down (and not touch), ignore
+            if (e.type === 'mousemove' && e.buttons === 0) return;
 
-        // 4. Handle Map Click (Arbitrary Destination)
+            const pageX = e.pageX || e.touches[0].pageX;
+            const pageY = e.pageY || e.touches[0].pageY;
+            
+            const x = pageX - container.offsetLeft;
+            const y = pageY - container.offsetTop;
+            
+            const walkX = x - startX;
+            const walkY = y - startY;
+
+            // Threshold to consider it a drag
+            if (Math.abs(walkX) > 5 || Math.abs(walkY) > 5) {
+                isDragging = true;
+                // Scroll the container
+                container.scrollLeft = scrollLeft - walkX;
+                container.scrollTop = scrollTop - walkY;
+            }
+        };
+
+        // Mouse Up / Touch End
+        const onPointerUp = () => {
+            container.style.cursor = 'default';
+        };
+
+        wrapper.addEventListener('mousedown', onPointerDown);
+        wrapper.addEventListener('touchstart', onPointerDown);
+
+        wrapper.addEventListener('mousemove', onPointerMove);
+        wrapper.addEventListener('touchmove', onPointerMove);
+
+        wrapper.addEventListener('mouseup', onPointerUp);
+        wrapper.addEventListener('touchend', onPointerUp);
+        wrapper.addEventListener('mouseleave', onPointerUp);
+
+        // Click Handler
         wrapper.addEventListener('click', (e) => {
+            // If it was a drag, do not select destination
+            if (isDragging) return;
+
+            // Also check time to avoid long presses being interpreted as clicks if needed
+            // const timeDiff = new Date().getTime() - mouseDownTime;
+            // if (timeDiff > 500) return; 
+
             const rect = wrapper.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -292,9 +360,58 @@ document.addEventListener('DOMContentLoaded', () => {
             selectDestination(customDest, wrapper);
         });
 
+        // POI Click Handler Update
+        mapData.pois.forEach(poi => {
+            let icon = "📍";
+            if (poi.type === "transport") icon = "🚆";
+            if (poi.type === "culture") icon = "🏛️";
+            if (poi.type === "nature") icon = "🌳";
+            if (poi.type === "shop") icon = "🛒";
+
+            const marker = createMarker(poi.x, poi.y, icon, poi.label, "poi");
+            
+            // Click event to set destination
+            marker.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent map click
+                if (!isDragging) {
+                    selectDestination(poi, wrapper);
+                }
+            });
+
+            wrapper.appendChild(marker);
+        });
+
         // If a destination is already selected (re-render scenario), draw it
         if (destination) {
             selectDestination(destination, wrapper);
+        }
+
+        // 5. Zoom Controls Logic
+        const btnZoomIn = document.getElementById('btn-zoom-in');
+        const btnZoomOut = document.getElementById('btn-zoom-out');
+        
+        if (btnZoomIn && btnZoomOut) {
+            // Determine initial zoom based on active mode
+            let currentZoom = 100;
+            const appUi = document.getElementById('app-ui');
+            if (appUi.classList.contains('mode-speed-2')) currentZoom = 150;
+            if (appUi.classList.contains('mode-speed-3')) currentZoom = 200;
+
+            // Apply manual zoom
+            const updateZoom = () => {
+                wrapper.style.width = `${currentZoom}%`;
+                wrapper.style.height = `${currentZoom}%`;
+            };
+
+            btnZoomIn.addEventListener('click', () => {
+                currentZoom += 25;
+                updateZoom();
+            });
+
+            btnZoomOut.addEventListener('click', () => {
+                currentZoom = Math.max(100, currentZoom - 25);
+                updateZoom();
+            });
         }
     }
 
@@ -372,7 +489,45 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>📍 Coordonnées : ${Math.round(dest.x)}, ${Math.round(dest.y)}</p>
             <p>📏 Distance estimée : ${Math.round(dist)} m</p>
             <p>⏱️ Temps de trajet : <strong>${time} min</strong> (à ${currentSpeed} km/h)</p>
+            <button id="btn-start-nav" class="action-btn primary" style="margin-top: 10px; width: 100%; padding: 10px; font-size: 1rem;">🚀 Démarrer l'itinéraire</button>
         `;
+
+        // Add Start Navigation Listener
+        const startBtn = document.getElementById('btn-start-nav');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                startNavigation(dest, time);
+            });
+        }
+    }
+
+    function startNavigation(dest, time) {
+        // Do not close modal, keep map visible
+        // const modal = document.getElementById('app-modal');
+        // modal.classList.add('hidden');
+
+        // Update Button State
+        const startBtn = document.getElementById('btn-start-nav');
+        if (startBtn) {
+            startBtn.textContent = "✅ Navigation en cours...";
+            startBtn.disabled = true;
+            startBtn.style.backgroundColor = "#2ecc71";
+        }
+
+        // Update Main UI "Next Stop" Card
+        const stationName = document.querySelector('.station-name');
+        const eta = document.querySelector('.eta');
+        
+        if (stationName) {
+            stationName.textContent = dest.label;
+            stationName.style.color = "var(--primary-color)";
+        }
+        
+        if (eta) {
+            eta.innerHTML = `Arrivée dans <span class="highlight">${time} min</span>`;
+        }
+
+        showToast(`🚀 Navigation démarrée vers ${dest.label}`);
     }
 
     // Attach listeners to all buttons in the mockup
@@ -398,7 +553,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Specific Actions
             if (actionName === "Itinéraire") {
                 openModal("Itinéraire Interactif", `
-                    <div id="interactive-map" class="interactive-map-container"></div>
+                    <div class="map-container-wrapper">
+                        <div id="interactive-map" class="interactive-map-container"></div>
+                        <div class="map-zoom-controls">
+                            <button id="btn-zoom-in" class="zoom-btn">➕</button>
+                            <button id="btn-zoom-out" class="zoom-btn">➖</button>
+                        </div>
+                    </div>
                     <div id="map-info-panel" class="map-info-panel">
                         <div id="map-info-content">
                             <p>👆 Cliquez sur la carte ou un lieu pour définir votre destination.</p>
