@@ -36,5 +36,15 @@
       "brightness": 50,
       "noise": 50
     }
+  },
+  "mapData": {
+    "currentPosition": { "x": 50, "y": 85, "label": "Vous" },
+    "pois": [
+      { "id": "p1", "x": 20, "y": 20, "label": "Gare du Nord", "type": "transport" },
+      { "id": "p2", "x": 75, "y": 15, "label": "Opéra", "type": "culture" },
+      { "id": "p3", "x": 85, "y": 65, "label": "Bibliothèque", "type": "culture" },
+      { "id": "p4", "x": 30, "y": 55, "label": "Parc Central", "type": "nature" },
+      { "id": "p5", "x": 60, "y": 40, "label": "Centre Commercial", "type": "shop" }
+    ]
   }
 }
