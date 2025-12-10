@@ -46,6 +46,24 @@
                 </div>
             </div>
 
+            <div class="control-group">
+                <label for="battery-range">Batterie (<span id="battery-val">100</span>%)</label>
+                <input type="range" id="battery-range" min="0" max="100" value="100">
+                <div class="range-labels">
+                    <span>0%</span><span>100%</span>
+                </div>
+            </div>
+
+            <div class="control-group checkbox-group">
+                <h3>Options Pédagogiques</h3>
+                <label>
+                    <input type="checkbox" id="toggle-explanations"> 🎓 Mode Explicatif
+                </label>
+                <label>
+                    <input type="checkbox" id="toggle-vibration"> 📳 Simulation Vibration
+                </label>
+            </div>
+
             <div class="indicators">
                 <h3>État détecté :</h3>
                 <ul>
@@ -117,6 +135,17 @@
                         <span class="nav-icon">👤</span>
                         <span class="nav-label">Profil</span>
                     </button>
+                </div>
+
+                <!-- Modals / Overlays -->
+                <div id="app-modal" class="app-modal hidden">
+                    <div class="modal-header">
+                        <h2 id="modal-title">Titre</h2>
+                        <button id="close-modal">✕</button>
+                    </div>
+                    <div id="modal-body" class="modal-body">
+                        <!-- Content injected via JS -->
+                    </div>
                 </div>
             </div>
         </main>
