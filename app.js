@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
     
+    const geminiApiKeyInput = document.getElementById('gemini-api-key');
+    const saveApiKeyBtn = document.getElementById('save-api-key');
+
     const appUi = document.getElementById('app-ui');
     const volumeBar = document.getElementById('volume-bar');
     
@@ -24,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let presets = {};
     let mapData = {}; // Store map data
     let currentDestination = null; // Store current destination
+    let geminiApiKey = localStorage.getItem('gemini_api_key') || '';
+    
+    if (geminiApiKey) {
+        geminiApiKeyInput.value = geminiApiKey;
+    }
+
     let lastState = {
         moving: false,
         speedLevel: 0,
@@ -72,6 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     toggleVibration.addEventListener('change', updateUI);
+
+    saveApiKeyBtn.addEventListener('click', () => {
+        const key = geminiApiKeyInput.value.trim();
+        if (key) {
+            geminiApiKey = key;
+            localStorage.setItem('gemini_api_key', key);
+            showToast("🤖 Clé API Gemini enregistrée !");
+        } else {
+            showToast("⚠️ Veuillez entrer une clé API valide.");
+        }
+    });
 
     toggleExplanations.addEventListener('change', () => {
         if (toggleExplanations.checked) {
@@ -528,6 +548,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`🚀 Navigation démarrée vers ${dest.label}`);
+
+        // Trigger Gemini Simulation if Key is present
+        if (geminiApiKey) {
+            simulateJourneyWithGemini(dest, time);
+        } else {
+            showToast("ℹ️ Ajoutez une clé API Gemini pour la simulation narrative.");
+        }
+    }
+
+    async function simulateJourneyWithGemini(dest, time) {
+        const transportMode = transportSelect.options[transportSelect.selectedIndex].text;
+        const speed = speedRange.value;
+        const brightness = brightnessRange.value;
+        const noise = noiseRange.value;
+        
+        const prompt = `
+            Tu es un assistant de navigation intelligent dans une application de simulation.
+            L'utilisateur effectue un trajet de ${mapData.currentPosition.label} à ${dest.label}.
+            
+            Contexte actuel :
+            - Mode de transport : ${transportMode}
+            - Vitesse : ${speed} km/h
+            - Ambiance : Luminosité ${brightness}%, Bruit ${noise} dB
+            - Temps estimé : ${time} minutes
+            
+            Décris brièvement le déroulement de ce trajet jusqu'à l'arrivée.
+            Intègre les éléments sensoriels (bruit, lumière, vitesse) dans la description.
+            Fais court (max 4 phrases).
+        `;
+
+        showToast("🤖 Génération de la simulation...");
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0].content) {
+                const narrative = data.candidates[0].content.parts[0].text;
+                openModal("🤖 Simulation Gemini", `<p style="font-size: 1.1rem; line-height: 1.6;">${narrative}</p>`);
+            } else {
+                console.error("Gemini Error:", data);
+                showToast("⚠️ Erreur de génération Gemini.");
+            }
+
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            showToast("⚠️ Erreur de connexion à Gemini.");
+        }
     }
 
     // Attach listeners to all buttons in the mockup
