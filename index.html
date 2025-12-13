@@ -28,6 +28,12 @@
                     <option value="">-- Sélectionner un scénario --</option>
                     <!-- Options chargées via JS -->
                 </select>
+                
+                <div id="scenario-controls" class="scenario-controls hidden" style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button id="btn-scenario-start" class="action-btn primary" style="flex: 1; padding: 5px;">▶️ Start</button>
+                    <button id="btn-scenario-stop" class="action-btn secondary" style="flex: 1; padding: 5px; background-color: #e74c3c;">⏹️ Stop</button>
+                </div>
+
                 <div id="scenario-status" class="scenario-status hidden">
                     <span class="status-icon">▶️</span>
                     <span id="scenario-desc">En attente...</span>

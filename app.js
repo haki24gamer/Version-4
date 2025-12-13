@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const scenarioSelect = document.getElementById('scenario-select');
     const scenarioStatus = document.getElementById('scenario-status');
     const scenarioDesc = document.getElementById('scenario-desc');
+    const scenarioControls = document.getElementById('scenario-controls');
+    const btnScenarioStart = document.getElementById('btn-scenario-start');
+    const btnScenarioStop = document.getElementById('btn-scenario-stop');
 
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
@@ -97,10 +100,30 @@ document.addEventListener('DOMContentLoaded', () => {
     scenarioSelect.addEventListener('change', (e) => {
         const selectedScenario = e.target.value;
         if (selectedScenario) {
+            // Show controls
+            scenarioControls.classList.remove('hidden');
+            
             // Open the map automatically
             openMapWithNavigation();
             showToast(`📍 Scénario "${scenarios[selectedScenario].label}" sélectionné. Choisissez une destination sur la carte.`);
+        } else {
+            scenarioControls.classList.add('hidden');
+            stopScenario();
         }
+    });
+
+    // Scenario Controls Listeners
+    btnScenarioStart.addEventListener('click', () => {
+        const selected = scenarioSelect.value;
+        if (selected) {
+            showToast(`▶️ Scénario démarré`);
+            runScenario(selected);
+        }
+    });
+
+    btnScenarioStop.addEventListener('click', () => {
+        stopScenario();
+        showToast(`⏹️ Scénario arrêté`);
     });
 
     toggleVibration.addEventListener('change', updateUI);
@@ -279,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(title, content) {
         modalTitle.textContent = title;
         modalBody.innerHTML = content;
+        modalBody.classList.remove('no-padding');
         modal.classList.remove('hidden');
     }
 
@@ -537,26 +561,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNavigating) {
             // Show navigation progress UI
             infoPanel.innerHTML = `
-                <h3>🧭 Navigation vers : ${dest.label}</h3>
+                <h3>🧭 Vers : ${dest.label}</h3>
                 <div class="nav-progress-container" style="margin: 10px 0;">
                     <div class="nav-progress-bar" style="background: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
                         <div class="nav-progress-fill" style="background: linear-gradient(90deg, #3498db, #2ecc71); height: 100%; width: ${progressPercent}%; transition: width 0.3s ease;"></div>
                     </div>
-                    <p style="text-align: center; margin-top: 5px; font-weight: bold;">${progressPercent}% du trajet</p>
                 </div>
-                <p>📏 Distance restante : <strong>${Math.round(dist)} m</strong></p>
-                <p>⏱️ Temps restant : <strong>${time > 0 ? time + ' min' : 'Arrivée imminente!'}</strong></p>
-                <p>🚀 Vitesse : ${currentSpeed} km/h</p>
-                <p style="color: #2ecc71; font-weight: bold; margin-top: 10px;">✅ Navigation en cours...</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <p>📏 <strong>${Math.round(dist)} m</strong></p>
+                    <p>⏱️ <strong>${time > 0 ? time + ' min' : 'Arrivée!'}</strong></p>
+                </div>
             `;
         } else {
             // Show destination selection UI
             infoPanel.innerHTML = `
-                <h3>Destination : ${dest.label}</h3>
-                <p>📍 Coordonnées : ${Math.round(dest.x)}, ${Math.round(dest.y)}</p>
-                <p>📏 Distance estimée : ${Math.round(dist)} m</p>
-                <p>⏱️ Temps de trajet : <strong>${time} min</strong> (à ${currentSpeed} km/h)</p>
-                <button id="btn-start-nav" class="action-btn primary" style="margin-top: 10px; width: 100%; padding: 10px; font-size: 1rem;">🚀 Démarrer l'itinéraire</button>
+                <h3>${dest.label}</h3>
+                <p>📏 ${Math.round(dist)} m • ⏱️ <strong>${time} min</strong></p>
+                <button id="btn-start-nav" class="action-btn primary" style="margin-top: 10px; width: 100%; padding: 10px; font-size: 1em;">🚀 Y aller</button>
             `;
 
             // Add Start Navigation Listener
@@ -567,6 +588,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+    }
+
+    function stopScenario() {
+        if (activeScenarioInterval) {
+            cancelAnimationFrame(activeScenarioInterval);
+            activeScenarioInterval = null;
+        }
+        scenarioStatus.classList.add('hidden');
+        transportSelect.disabled = false;
+        scenarioSelect.disabled = false;
+        isNavigating = false;
+        
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+        
+        if (scenarioDesc) scenarioDesc.textContent = "Arrêté";
     }
 
     function runScenario(scenarioKey) {
@@ -797,6 +836,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `);
+        
+        modalBody.classList.add('no-padding');
+
         // Initialize Map after modal is open
         setTimeout(() => {
             renderMap('interactive-map', currentDestination);
@@ -828,22 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Specific Actions
             if (actionName === "Itinéraire") {
-                openModal("Itinéraire Interactif", `
-                    <div class="map-container-wrapper">
-                        <div id="interactive-map" class="interactive-map-container"></div>
-                        <div class="map-zoom-controls">
-                            <button id="btn-zoom-in" class="zoom-btn">➕</button>
-                            <button id="btn-zoom-out" class="zoom-btn">➖</button>
-                        </div>
-                    </div>
-                    <div id="map-info-panel" class="map-info-panel">
-                        <div id="map-info-content">
-                            <p>👆 Cliquez sur la carte ou un lieu pour définir votre destination.</p>
-                        </div>
-                    </div>
-                `);
-                // Initialize Map after modal is open
-                setTimeout(() => renderMap('interactive-map'), 100);
+                openMapWithNavigation();
             } else if (actionName === "Billets") {
                 openModal("Mes Billets", `
                     <div class="ticket-view">
