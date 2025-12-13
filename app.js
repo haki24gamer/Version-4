@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const noiseVal = document.getElementById('noise-val');
     const batteryVal = document.getElementById('battery-val');
 
+    // Scenario Elements
+    const scenarioSelect = document.getElementById('scenario-select');
+    const scenarioStatus = document.getElementById('scenario-status');
+    const scenarioDesc = document.getElementById('scenario-desc');
+
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
     
@@ -23,7 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let presets = {};
     let mapData = {}; // Store map data
+    let scenarios = {}; // Store scenarios
     let currentDestination = null; // Store current destination
+    let activeScenarioInterval = null; // Store active scenario animation frame
+
     let lastState = {
         moving: false,
         speedLevel: 0,
@@ -39,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             presets = data.presets;
             mapData = data.mapData; // Load map data
+            scenarios = data.scenarios || {};
             populateTransportOptions();
+            populateScenarioOptions();
         })
         .catch(err => console.error('Erreur chargement JSON:', err));
 
@@ -49,6 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
             option.value = key;
             option.textContent = value.label;
             transportSelect.appendChild(option);
+        }
+    }
+
+    function populateScenarioOptions() {
+        for (const [key, value] of Object.entries(scenarios)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = value.label;
+            scenarioSelect.appendChild(option);
         }
     }
 
@@ -501,6 +520,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function runScenario(scenarioKey) {
+        if (!scenarios[scenarioKey]) return;
+        
+        const scenario = scenarios[scenarioKey];
+        const steps = scenario.steps;
+        
+        // Stop any previous scenario
+        if (activeScenarioInterval) cancelAnimationFrame(activeScenarioInterval);
+        
+        scenarioStatus.classList.remove('hidden');
+        transportSelect.disabled = true;
+        scenarioSelect.disabled = true;
+
+        const executeStep = (index) => {
+            if (index >= steps.length) {
+                // End of scenario
+                scenarioDesc.textContent = "Simulation terminée.";
+                setTimeout(() => {
+                    scenarioStatus.classList.add('hidden');
+                    transportSelect.disabled = false;
+                    scenarioSelect.disabled = false;
+                }, 2000);
+                return;
+            }
+
+            const step = steps[index];
+            scenarioDesc.textContent = step.desc;
+            
+            // Target values
+            const targetSpeed = step.values.speed;
+            const targetNoise = step.values.noise;
+            const targetBrightness = step.values.brightness;
+            const targetBattery = step.values.battery;
+
+            // Current values
+            const startSpeed = parseInt(speedRange.value);
+            const startNoise = parseInt(noiseRange.value);
+            const startBrightness = parseInt(brightnessRange.value);
+            const startBattery = parseInt(batteryRange.value);
+
+            // Interpolation
+            const startTime = Date.now();
+            const duration = step.duration;
+            
+            const animate = () => {
+                const now = Date.now();
+                const progress = Math.min(1, (now - startTime) / duration);
+                
+                speedRange.value = Math.round(startSpeed + (targetSpeed - startSpeed) * progress);
+                noiseRange.value = Math.round(startNoise + (targetNoise - startNoise) * progress);
+                brightnessRange.value = Math.round(startBrightness + (targetBrightness - startBrightness) * progress);
+                batteryRange.value = Math.round(startBattery + (targetBattery - startBattery) * progress);
+                
+                updateUI();
+
+                if (progress < 1) {
+                    activeScenarioInterval = requestAnimationFrame(animate);
+                } else {
+                    // Next step
+                    executeStep(index + 1);
+                }
+            };
+            
+            activeScenarioInterval = requestAnimationFrame(animate);
+        };
+
+        executeStep(0);
+    }
+
     function startNavigation(dest, time) {
         // Do not close modal, keep map visible
         // const modal = document.getElementById('app-modal');
@@ -528,6 +616,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`🚀 Navigation démarrée vers ${dest.label}`);
+
+        // Check if a scenario is selected
+        const selectedScenario = scenarioSelect.value;
+        if (selectedScenario) {
+            // Close modal to see the simulation better
+            const modal = document.getElementById('app-modal');
+            modal.classList.add('hidden');
+            
+            runScenario(selectedScenario);
+        }
     }
 
     // Attach listeners to all buttons in the mockup

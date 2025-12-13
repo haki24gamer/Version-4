@@ -23,6 +23,18 @@
             </div>
 
             <div class="control-group">
+                <label for="scenario-select">Scénario de Simulation</label>
+                <select id="scenario-select">
+                    <option value="">-- Sélectionner un scénario --</option>
+                    <!-- Options chargées via JS -->
+                </select>
+                <div id="scenario-status" class="scenario-status hidden">
+                    <span class="status-icon">▶️</span>
+                    <span id="scenario-desc">En attente...</span>
+                </div>
+            </div>
+
+            <div class="control-group">
                 <label for="speed-range">Vitesse (<span id="speed-val">0</span> km/h)</label>
                 <input type="range" id="speed-range" min="0" max="120" value="0">
                 <div class="range-labels">
