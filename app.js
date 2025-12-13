@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let scenarios = {}; // Store scenarios
     let currentDestination = null; // Store current destination
     let activeScenarioInterval = null; // Store active scenario animation frame
+    let watchId = null; // Store geolocation watch ID
+    let isNavigating = false; // Track if navigation is active
+    let userStartPosition = null; // Store user's starting position for animation
 
     let lastState = {
         moving: false,
@@ -88,6 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (input !== batteryRange) transportSelect.value = 'custom';
             updateUI();
         });
+    });
+
+    // Auto-open map when scenario is selected
+    scenarioSelect.addEventListener('change', (e) => {
+        const selectedScenario = e.target.value;
+        if (selectedScenario) {
+            // Open the map automatically
+            openMapWithNavigation();
+            showToast(`📍 Scénario "${scenarios[selectedScenario].label}" sélectionné. Choisissez une destination sur la carte.`);
+        }
     });
 
     toggleVibration.addEventListener('change', updateUI);
@@ -483,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const infoPanel = document.getElementById('map-info-content');
         if (!infoPanel) return;
 
-        // Calculate fake distance
+        // Calculate distance from current position to destination
         const dx = dest.x - mapData.currentPosition.x;
         const dy = dest.y - mapData.currentPosition.y;
         // Assume map diagonal is roughly 2km for this simulation
@@ -500,23 +513,59 @@ document.addEventListener('DOMContentLoaded', () => {
         // Time in minutes
         let time = Math.round(dist / speedInMPerMin);
         
-        // Ensure at least 1 min
-        time = Math.max(1, time);
+        // Ensure at least 1 min (or 0 if very close)
+        if (dist < 10) {
+            time = 0;
+        } else {
+            time = Math.max(1, time);
+        }
 
-        infoPanel.innerHTML = `
-            <h3>Destination : ${dest.label}</h3>
-            <p>📍 Coordonnées : ${Math.round(dest.x)}, ${Math.round(dest.y)}</p>
-            <p>📏 Distance estimée : ${Math.round(dist)} m</p>
-            <p>⏱️ Temps de trajet : <strong>${time} min</strong> (à ${currentSpeed} km/h)</p>
-            <button id="btn-start-nav" class="action-btn primary" style="margin-top: 10px; width: 100%; padding: 10px; font-size: 1rem;">🚀 Démarrer l'itinéraire</button>
-        `;
+        // Calculate progress if navigating
+        let progressPercent = 0;
+        if (isNavigating && userStartPosition) {
+            const totalDx = dest.x - userStartPosition.x;
+            const totalDy = dest.y - userStartPosition.y;
+            const totalDist = Math.sqrt(totalDx*totalDx + totalDy*totalDy);
+            
+            const coveredDx = mapData.currentPosition.x - userStartPosition.x;
+            const coveredDy = mapData.currentPosition.y - userStartPosition.y;
+            const coveredDist = Math.sqrt(coveredDx*coveredDx + coveredDy*coveredDy);
+            
+            progressPercent = Math.min(100, Math.round((coveredDist / totalDist) * 100));
+        }
 
-        // Add Start Navigation Listener
-        const startBtn = document.getElementById('btn-start-nav');
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                startNavigation(dest, time);
-            });
+        if (isNavigating) {
+            // Show navigation progress UI
+            infoPanel.innerHTML = `
+                <h3>🧭 Navigation vers : ${dest.label}</h3>
+                <div class="nav-progress-container" style="margin: 10px 0;">
+                    <div class="nav-progress-bar" style="background: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
+                        <div class="nav-progress-fill" style="background: linear-gradient(90deg, #3498db, #2ecc71); height: 100%; width: ${progressPercent}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 5px; font-weight: bold;">${progressPercent}% du trajet</p>
+                </div>
+                <p>📏 Distance restante : <strong>${Math.round(dist)} m</strong></p>
+                <p>⏱️ Temps restant : <strong>${time > 0 ? time + ' min' : 'Arrivée imminente!'}</strong></p>
+                <p>🚀 Vitesse : ${currentSpeed} km/h</p>
+                <p style="color: #2ecc71; font-weight: bold; margin-top: 10px;">✅ Navigation en cours...</p>
+            `;
+        } else {
+            // Show destination selection UI
+            infoPanel.innerHTML = `
+                <h3>Destination : ${dest.label}</h3>
+                <p>📍 Coordonnées : ${Math.round(dest.x)}, ${Math.round(dest.y)}</p>
+                <p>📏 Distance estimée : ${Math.round(dist)} m</p>
+                <p>⏱️ Temps de trajet : <strong>${time} min</strong> (à ${currentSpeed} km/h)</p>
+                <button id="btn-start-nav" class="action-btn primary" style="margin-top: 10px; width: 100%; padding: 10px; font-size: 1rem;">🚀 Démarrer l'itinéraire</button>
+            `;
+
+            // Add Start Navigation Listener
+            const startBtn = document.getElementById('btn-start-nav');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    startNavigation(dest, time);
+                });
+            }
         }
     }
 
@@ -533,15 +582,44 @@ document.addEventListener('DOMContentLoaded', () => {
         transportSelect.disabled = true;
         scenarioSelect.disabled = true;
 
+        // Calculate total duration for position interpolation
+        const totalDuration = steps.reduce((sum, step) => sum + step.duration, 0);
+        let elapsedDuration = 0;
+
+        // Store start position for animation
+        userStartPosition = { ...mapData.currentPosition };
+
         const executeStep = (index) => {
             if (index >= steps.length) {
-                // End of scenario
-                scenarioDesc.textContent = "Simulation terminée.";
+                // End of scenario - user reached destination
+                scenarioDesc.textContent = "🎉 Destination atteinte !";
+                isNavigating = false;
+                
+                // Stop geolocation watching
+                if (watchId) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+
+                // Update user position to destination
+                if (currentDestination) {
+                    mapData.currentPosition = { 
+                        x: currentDestination.x, 
+                        y: currentDestination.y, 
+                        label: "Vous (Arrivé)" 
+                    };
+                    updateUserPositionOnMap();
+                    showToast(`🎉 Vous êtes arrivé à ${currentDestination.label} !`);
+                }
+
                 setTimeout(() => {
                     scenarioStatus.classList.add('hidden');
                     transportSelect.disabled = false;
                     scenarioSelect.disabled = false;
-                }, 2000);
+                    // Reset position for next navigation
+                    mapData.currentPosition = { x: 50, y: 85, label: "Vous" };
+                    currentDestination = null;
+                }, 3000);
                 return;
             }
 
@@ -563,21 +641,39 @@ document.addEventListener('DOMContentLoaded', () => {
             // Interpolation
             const startTime = Date.now();
             const duration = step.duration;
+            const stepStartElapsed = elapsedDuration;
             
             const animate = () => {
                 const now = Date.now();
-                const progress = Math.min(1, (now - startTime) / duration);
+                const stepProgress = Math.min(1, (now - startTime) / duration);
                 
-                speedRange.value = Math.round(startSpeed + (targetSpeed - startSpeed) * progress);
-                noiseRange.value = Math.round(startNoise + (targetNoise - startNoise) * progress);
-                brightnessRange.value = Math.round(startBrightness + (targetBrightness - startBrightness) * progress);
-                batteryRange.value = Math.round(startBattery + (targetBattery - startBattery) * progress);
+                speedRange.value = Math.round(startSpeed + (targetSpeed - startSpeed) * stepProgress);
+                noiseRange.value = Math.round(startNoise + (targetNoise - startNoise) * stepProgress);
+                brightnessRange.value = Math.round(startBrightness + (targetBrightness - startBrightness) * stepProgress);
+                batteryRange.value = Math.round(startBattery + (targetBattery - startBattery) * stepProgress);
+                
+                // Update user position on map based on overall progress
+                if (currentDestination && userStartPosition) {
+                    const currentElapsed = stepStartElapsed + (duration * stepProgress);
+                    const overallProgress = currentElapsed / totalDuration;
+                    
+                    const newX = userStartPosition.x + (currentDestination.x - userStartPosition.x) * overallProgress;
+                    const newY = userStartPosition.y + (currentDestination.y - userStartPosition.y) * overallProgress;
+                    
+                    mapData.currentPosition.x = newX;
+                    mapData.currentPosition.y = newY;
+                    
+                    updateUserPositionOnMap();
+                    updateMapInfo(currentDestination);
+                }
                 
                 updateUI();
 
-                if (progress < 1) {
+                if (stepProgress < 1) {
                     activeScenarioInterval = requestAnimationFrame(animate);
                 } else {
+                    // Update elapsed duration for next step
+                    elapsedDuration = stepStartElapsed + duration;
                     // Next step
                     executeStep(index + 1);
                 }
@@ -589,10 +685,42 @@ document.addEventListener('DOMContentLoaded', () => {
         executeStep(0);
     }
 
+    function updateUserPositionOnMap() {
+        const mapContainer = document.getElementById('interactive-map');
+        if (!mapContainer) return;
+
+        const wrapper = mapContainer.querySelector('.map-scroll-wrapper');
+        if (!wrapper) return;
+
+        // Find and update current position marker
+        let currentMarker = wrapper.querySelector('.map-marker.current');
+        
+        if (currentMarker) {
+            currentMarker.style.left = `${mapData.currentPosition.x}%`;
+            currentMarker.style.top = `${mapData.currentPosition.y}%`;
+            
+            // Add pulsing animation during navigation
+            if (isNavigating) {
+                currentMarker.classList.add('navigating');
+            } else {
+                currentMarker.classList.remove('navigating');
+            }
+            
+            // Update label
+            const label = currentMarker.querySelector('.map-marker-label');
+            if (label) {
+                label.textContent = mapData.currentPosition.label;
+            }
+        }
+
+        // Redraw the path from current position to destination
+        if (currentDestination) {
+            drawPath(mapData.currentPosition, currentDestination, wrapper);
+        }
+    }
+
     function startNavigation(dest, time) {
-        // Do not close modal, keep map visible
-        // const modal = document.getElementById('app-modal');
-        // modal.classList.add('hidden');
+        isNavigating = true;
 
         // Update Button State
         const startBtn = document.getElementById('btn-start-nav');
@@ -620,12 +748,62 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if a scenario is selected
         const selectedScenario = scenarioSelect.value;
         if (selectedScenario) {
-            // Close modal to see the simulation better
-            const modal = document.getElementById('app-modal');
-            modal.classList.add('hidden');
+            // Keep the map modal open to show real-time tracking
+            // Do NOT close the modal - user should see the map during navigation
+            
+            // Start real-time geolocation tracking (if available)
+            startGeolocationTracking();
             
             runScenario(selectedScenario);
+        } else {
+            showToast("⚠️ Sélectionnez un scénario pour démarrer la simulation");
         }
+    }
+
+    function startGeolocationTracking() {
+        // Try to use real geolocation if available
+        if ('geolocation' in navigator) {
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    // In a real app, we would convert GPS coordinates to map coordinates
+                    // For this simulation, we'll use the simulated position from the scenario
+                    console.log('Real GPS Position:', position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.log('Geolocation not available, using simulation:', error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 1000,
+                    timeout: 5000
+                }
+            );
+        }
+    }
+
+    function openMapWithNavigation() {
+        // Open the map modal
+        openModal("Itinéraire Interactif", `
+            <div class="map-container-wrapper">
+                <div id="interactive-map" class="interactive-map-container"></div>
+                <div class="map-zoom-controls">
+                    <button id="btn-zoom-in" class="zoom-btn">➕</button>
+                    <button id="btn-zoom-out" class="zoom-btn">➖</button>
+                </div>
+            </div>
+            <div id="map-info-panel" class="map-info-panel">
+                <div id="map-info-content">
+                    <p>👆 Cliquez sur la carte ou un lieu pour définir votre destination.</p>
+                </div>
+            </div>
+        `);
+        // Initialize Map after modal is open
+        setTimeout(() => {
+            renderMap('interactive-map', currentDestination);
+            if (currentDestination) {
+                updateMapInfo(currentDestination);
+            }
+        }, 100);
     }
 
     // Attach listeners to all buttons in the mockup
