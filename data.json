@@ -52,12 +52,13 @@
     "public_transport": {
       "label": "Transport en Commun",
       "steps": [
-        { "duration": 1000, "desc": "Départ", "values": { "speed": 0, "noise": 40, "brightness": 60, "battery": 80 } },
-        { "duration": 3000, "desc": "Marche vers le métro", "values": { "speed": 5, "noise": 60, "brightness": 70, "battery": 79 } },
-        { "duration": 4000, "desc": "Descente dans le métro (Sombre)", "values": { "speed": 5, "noise": 75, "brightness": 30, "battery": 78 } },
-        { "duration": 2000, "desc": "Attente sur le quai", "values": { "speed": 0, "noise": 80, "brightness": 30, "battery": 77 } },
-        { "duration": 6000, "desc": "Trajet en métro (Rapide & Bruyant)", "values": { "speed": 65, "noise": 90, "brightness": 25, "battery": 75 } },
-        { "duration": 1500, "desc": "Sortie du métro", "values": { "speed": 5, "noise": 70, "brightness": 60, "battery": 74 } }
+        { "duration": 2000, "desc": "Départ", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
+        { "duration": 3000, "desc": "Marche vers la station", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
+        { "duration": 3000, "desc": "Descente et validation", "values": { "speed": 3, "noise": 70, "brightness": 50, "battery": 79 } },
+        { "duration": 3000, "desc": "Attente sur le quai", "values": { "speed": 0, "noise": 75, "brightness": 45, "battery": 79 } },
+        { "duration": 15000, "desc": "Trajet en métro", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 78 } },
+        { "duration": 5000, "desc": "Passage dans un tunnel sombre", "values": { "speed": 80, "noise": 90, "brightness": 15, "battery": 77 } },
+        { "duration": 3000, "desc": "Sortie du tunnel", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 77 } }
       ]
     }
   },
@@ -162,8 +163,7 @@
       { "id": "p8", "x": 10, "y": 85, "label": "Stade", "type": "nature", "nodeId": "n26" },
       { "id": "p9", "x": 50, "y": 70, "label": "Place du Marché", "type": "shop", "nodeId": "n23" },
       { "id": "p10", "x": 90, "y": 55, "label": "Université", "type": "culture", "nodeId": "n20" },
-      { "id": "p11", "x": 70, "y": 10, "label": "Musée d'Art", "type": "culture", "nodeId": "n4" },
-      { "id": "p12", "x": 30, "y": 70, "label": "Station Métro", "type": "transport", "nodeId": "n22" }
+      { "id": "p11", "x": 70, "y": 10, "label": "Musée d'Art", "type": "culture", "nodeId": "n4" }
     ]
   }
 }
