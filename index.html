@@ -8,6 +8,10 @@
 </head>
 <body>
 
+    <div id="scenario-status" class="scenario-status-top hidden">
+        <h1 id="scenario-desc">En attente...</h1>
+    </div>
+
     <div class="main-container">
         <!-- Panneau de Contrôle (Simulation du Contexte) -->
         <aside class="control-panel">
@@ -20,6 +24,18 @@
                     <option value="custom">Adaptative</option>
                     <!-- Options chargées via JS -->
                 </select>
+            </div>
+
+            <div class="control-group">
+                <label for="scenario-select">Scénario de Simulation</label>
+                <select id="scenario-select">
+                    <option value="">-- Sélectionner un scénario --</option>
+                    <!-- Options chargées via JS -->
+                </select>
+                
+                <div id="scenario-controls" class="scenario-controls hidden" style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button id="btn-scenario-toggle" class="action-btn primary" style="flex: 1; padding: 5px;">▶️ Start</button>
+                </div>
             </div>
 
             <div class="control-group">
