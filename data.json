@@ -41,24 +41,24 @@
     "walk_to_drive": {
       "label": "Marche puis Conduite",
       "steps": [
-        { "duration": 1000, "desc": "L'utilisateur sort de chez lui", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 100 } },
-        { "duration": 4000, "desc": "Marche rapide vers le parking", "values": { "speed": 6, "noise": 50, "brightness": 80, "battery": 99 } },
-        { "duration": 2000, "desc": "Arrivée à la voiture, installation", "values": { "speed": 0, "noise": 20, "brightness": 50, "battery": 99 } },
-        { "duration": 5000, "desc": "Démarrage et conduite en ville", "values": { "speed": 45, "noise": 60, "brightness": 50, "battery": 98 } },
-        { "duration": 6000, "desc": "Accélération sur voie rapide", "values": { "speed": 90, "noise": 70, "brightness": 50, "battery": 97 } },
-        { "duration": 2000, "desc": "Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 95 } }
+        { "duration": 1000, "desc": "🏠 L'utilisateur sort de chez lui", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 100 } },
+        { "duration": 4000, "desc": "🚶 Marche rapide vers le parking", "values": { "speed": 6, "noise": 50, "brightness": 80, "battery": 99 } },
+        { "duration": 2000, "desc": "🚗 Arrivée à la voiture, installation", "values": { "speed": 0, "noise": 20, "brightness": 50, "battery": 99 } },
+        { "duration": 5000, "desc": "🏙️ Démarrage et conduite en ville", "values": { "speed": 45, "noise": 60, "brightness": 50, "battery": 98 } },
+        { "duration": 6000, "desc": "🛣️ Accélération sur voie rapide", "values": { "speed": 90, "noise": 70, "brightness": 50, "battery": 97 } },
+        { "duration": 2000, "desc": "🏁 Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 95 } }
       ]
     },
     "public_transport": {
       "label": "Transport en Commun",
       "steps": [
-        { "duration": 2000, "desc": "Départ", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
-        { "duration": 3000, "desc": "Marche vers la station", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
-        { "duration": 3000, "desc": "Descente et validation", "values": { "speed": 3, "noise": 70, "brightness": 50, "battery": 79 } },
-        { "duration": 3000, "desc": "Attente sur le quai", "values": { "speed": 0, "noise": 75, "brightness": 45, "battery": 79 } },
-        { "duration": 15000, "desc": "Trajet en métro", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 78 } },
-        { "duration": 5000, "desc": "Passage dans un tunnel sombre", "values": { "speed": 80, "noise": 90, "brightness": 15, "battery": 77 } },
-        { "duration": 3000, "desc": "Sortie du tunnel", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 77 } }
+        { "duration": 2000, "desc": "🏠 Départ", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
+        { "duration": 3000, "desc": "🚶 Marche vers la station", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
+        { "duration": 3000, "desc": "🎟️ Descente et validation", "values": { "speed": 3, "noise": 70, "brightness": 50, "battery": 79 } },
+        { "duration": 3000, "desc": "⏳ Attente sur le quai", "values": { "speed": 0, "noise": 75, "brightness": 45, "battery": 79 } },
+        { "duration": 15000, "desc": "🚇 Trajet en métro", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 78 } },
+        { "duration": 5000, "desc": "🌑 Passage dans un tunnel sombre", "values": { "speed": 80, "noise": 90, "brightness": 15, "battery": 77 } },
+        { "duration": 3000, "desc": "☀️ Sortie du tunnel", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 77 } }
       ]
     }
   },

@@ -32,15 +32,45 @@ body {
     color: var(--text-color);
     height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.scenario-status-top {
+    width: 90%;
+    max-width: 1200px;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    animation: slideDown 0.5s ease;
+    z-index: 10;
+}
+
+.scenario-status-top h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 800;
+}
+
+.scenario-status-top.hidden {
+    display: none;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .main-container {
     display: flex;
     width: 90%;
     max-width: 1200px;
-    height: 90vh;
+    height: 80vh;
     background: var(--panel-bg);
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     border-radius: 20px;

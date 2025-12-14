@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scenarioStatus = document.getElementById('scenario-status');
     const scenarioDesc = document.getElementById('scenario-desc');
     const scenarioControls = document.getElementById('scenario-controls');
-    const btnScenarioStart = document.getElementById('btn-scenario-start');
-    const btnScenarioStop = document.getElementById('btn-scenario-stop');
+    const btnScenarioToggle = document.getElementById('btn-scenario-toggle');
 
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
@@ -38,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let watchId = null; // Store geolocation watch ID
     let isNavigating = false; // Track if navigation is active
     let userStartPosition = null; // Store user's starting position for animation
+    let isScenarioRunning = false;
 
     let lastState = {
         moving: false,
@@ -114,17 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Scenario Controls Listeners
-    btnScenarioStart.addEventListener('click', () => {
-        const selected = scenarioSelect.value;
-        if (selected) {
-            showToast(`▶️ Scénario démarré`);
-            runScenario(selected);
+    btnScenarioToggle.addEventListener('click', () => {
+        if (isScenarioRunning) {
+            stopScenario();
+            showToast(`⏹️ Scénario arrêté`);
+        } else {
+            const selected = scenarioSelect.value;
+            if (selected) {
+                showToast(`▶️ Scénario démarré`);
+                runScenario(selected);
+            }
         }
-    });
-
-    btnScenarioStop.addEventListener('click', () => {
-        stopScenario();
-        showToast(`⏹️ Scénario arrêté`);
     });
 
     toggleVibration.addEventListener('change', updateUI);
@@ -745,6 +745,13 @@ document.addEventListener('DOMContentLoaded', () => {
         transportSelect.disabled = false;
         scenarioSelect.disabled = false;
         isNavigating = false;
+        isScenarioRunning = false;
+
+        // Reset Button
+        btnScenarioToggle.textContent = "▶️ Start";
+        btnScenarioToggle.classList.remove('secondary');
+        btnScenarioToggle.classList.add('primary');
+        btnScenarioToggle.style.backgroundColor = ""; 
         
         if (watchId) {
             navigator.geolocation.clearWatch(watchId);
@@ -766,6 +773,13 @@ document.addEventListener('DOMContentLoaded', () => {
         scenarioStatus.classList.remove('hidden');
         transportSelect.disabled = true;
         scenarioSelect.disabled = true;
+        isScenarioRunning = true;
+
+        // Update Button to Stop
+        btnScenarioToggle.textContent = "⏹️ Stop";
+        btnScenarioToggle.classList.remove('primary');
+        btnScenarioToggle.classList.add('secondary');
+        btnScenarioToggle.style.backgroundColor = "#e74c3c";
 
         // Calculate total duration for position interpolation
         const totalDuration = steps.reduce((sum, step) => sum + step.duration, 0);
@@ -819,6 +833,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     scenarioStatus.classList.add('hidden');
                     transportSelect.disabled = false;
                     scenarioSelect.disabled = false;
+                    isScenarioRunning = false;
+
+                    // Reset Button
+                    btnScenarioToggle.textContent = "▶️ Start";
+                    btnScenarioToggle.classList.remove('secondary');
+                    btnScenarioToggle.classList.add('primary');
+                    btnScenarioToggle.style.backgroundColor = "";
+
                     // Reset position for next navigation
                     mapData.currentPosition = { x: 50, y: 85, label: "Vous" };
                     currentDestination = null;
