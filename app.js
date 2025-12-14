@@ -766,12 +766,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const scenario = scenarios[scenarioKey];
         const steps = scenario.steps;
+        const isManual = scenario.type === 'manual';
         
         // Stop any previous scenario
         if (activeScenarioInterval) cancelAnimationFrame(activeScenarioInterval);
         
         scenarioStatus.classList.remove('hidden');
-        transportSelect.disabled = true;
+        transportSelect.disabled = !isManual; // Enable transport select in manual mode if desired, or keep disabled
         scenarioSelect.disabled = true;
         isScenarioRunning = true;
 
@@ -872,12 +873,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dt = (now - lastFrameTime) / 1000; // seconds
                 lastFrameTime = now;
 
-                const stepProgress = Math.min(1, (now - startTime) / duration);
-                
-                speedRange.value = Math.round(startSpeed + (targetSpeed - startSpeed) * stepProgress);
-                noiseRange.value = Math.round(startNoise + (targetNoise - startNoise) * stepProgress);
-                brightnessRange.value = Math.round(startBrightness + (targetBrightness - startBrightness) * stepProgress);
-                batteryRange.value = Math.round(startBattery + (targetBattery - startBattery) * stepProgress);
+                // Only interpolate variables if NOT manual
+                if (!isManual) {
+                    const stepProgress = Math.min(1, (now - startTime) / duration);
+                    
+                    speedRange.value = Math.round(startSpeed + (targetSpeed - startSpeed) * stepProgress);
+                    noiseRange.value = Math.round(startNoise + (targetNoise - startNoise) * stepProgress);
+                    brightnessRange.value = Math.round(startBrightness + (targetBrightness - startBrightness) * stepProgress);
+                    batteryRange.value = Math.round(startBattery + (targetBattery - startBattery) * stepProgress);
+                }
                 
                 // Update user position on map based on REAL SPEED
                 let overallProgress = 0;
@@ -949,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateUI();
 
                 // Check if step time is up
-                if ((now - startTime) >= duration) {
+                if ((now - startTime) >= duration || isManual) {
                     // Step time finished. Decide whether to proceed.
                     
                     const isLastStep = index === steps.length - 1;
@@ -961,8 +965,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     let shouldHold = false;
                     
                     if (!arrived && currentDestination) {
+                        // If manual, we ALWAYS hold until arrived
+                        if (isManual) {
+                            shouldHold = true;
+                        }
                         // If we are on the last step and it has speed (e.g. walking), hold it.
-                        if (isLastStep && targetSpeed > 0) {
+                        else if (isLastStep && targetSpeed > 0) {
                             shouldHold = true;
                         }
                         // If we are on second to last, and next is a STOP (speed 0), hold current (keep moving).

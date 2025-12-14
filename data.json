@@ -60,6 +60,13 @@
         { "duration": 5000, "desc": "🌑 Passage dans un tunnel sombre", "values": { "speed": 80, "noise": 90, "brightness": 15, "battery": 77 } },
         { "duration": 3000, "desc": "☀️ Sortie du tunnel", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 77 } }
       ]
+    },
+    "manual_control": {
+      "label": "Contrôle Manuel",
+      "type": "manual",
+      "steps": [
+        { "duration": 999999, "desc": "🎮 Mode Manuel : Ajustez les curseurs vous-même", "values": { "speed": 0, "noise": 0, "brightness": 50, "battery": 100 } }
+      ]
     }
   },
   "mapData": {
