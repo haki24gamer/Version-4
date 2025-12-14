@@ -1136,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Specific Actions
-            if (actionName === "Itinéraire") {
+            if (actionName === "Itinéraire" || actionName === "Carte") {
                 openMapWithNavigation();
             } else if (actionName === "Billets") {
                 openModal("Mes Billets", `
