@@ -49,16 +49,25 @@
         { "duration": 2000, "desc": "🏁 Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 95 } }
       ]
     },
-    "public_transport": {
-      "label": "Transport en Commun",
+    "bus": {
+      "label": "Bus",
       "steps": [
-        { "duration": 2000, "desc": "🏠 Départ", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
-        { "duration": 3000, "desc": "🚶 Marche vers la station", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
-        { "duration": 3000, "desc": "🎟️ Descente et validation", "values": { "speed": 3, "noise": 70, "brightness": 50, "battery": 79 } },
-        { "duration": 3000, "desc": "⏳ Attente sur le quai", "values": { "speed": 0, "noise": 75, "brightness": 45, "battery": 79 } },
-        { "duration": 15000, "desc": "🚇 Trajet en métro", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 78 } },
-        { "duration": 5000, "desc": "🌑 Passage dans un tunnel sombre", "values": { "speed": 80, "noise": 90, "brightness": 15, "battery": 77 } },
-        { "duration": 3000, "desc": "☀️ Sortie du tunnel", "values": { "speed": 80, "noise": 85, "brightness": 60, "battery": 77 } }
+        { "duration": 2000, "desc": "🏠 Départ de chez soi", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
+        { "duration": 3000, "desc": "🚶 Marche vers l'arrêt de bus", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
+        { "duration": 2000, "desc": "🕒 Attente à l'arrêt", "values": { "speed": 0, "noise": 70, "brightness": 60, "battery": 79 } },
+        { "duration": 10000, "desc": "🚌 Trajet en bus à travers la ville", "values": { "speed": 45, "noise": 80, "brightness": 50, "battery": 78 } },
+        { "duration": 3000, "desc": "🌑 Passage dans un tunnel", "values": { "speed": 45, "noise": 90, "brightness": 20, "battery": 77 } },
+        { "duration": 3000, "desc": "🏁 Descente et arrivée à destination", "values": { "speed": 0, "noise": 50, "brightness": 70, "battery": 77 } }
+      ]
+    },
+
+    "walking_mode": {
+      "label": "Mode de marche",
+      "steps": [
+        { "duration": 1000, "desc": "🏠 Début de la promenade", "values": { "speed": 0, "noise": 30, "brightness": 70, "battery": 100 } },
+        { "duration": 8000, "desc": "🚶‍♂️ Marche régulière en milieu urbain", "values": { "speed": 5, "noise": 45, "brightness": 85, "battery": 99 } },
+        { "duration": 2000, "desc": "☕ Petite pause sur un banc", "values": { "speed": 0, "noise": 25, "brightness": 80, "battery": 98 } },
+        { "duration": 3000, "desc": "🏁 Fin de la promenade, arrivée", "values": { "speed": 0, "noise": 30, "brightness": 75, "battery": 97 } }
       ]
     },
     "manual_control": {
