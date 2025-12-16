@@ -654,11 +654,8 @@ document.addEventListener('DOMContentLoaded', () => {
         polyline.setAttribute("points", points);
         polyline.setAttribute("class", "map-path-line");
         polyline.setAttribute("fill", "none");
-        polyline.setAttribute("stroke", "#3498db");
-        polyline.setAttribute("stroke-width", "4");
         polyline.setAttribute("stroke-linecap", "round");
         polyline.setAttribute("stroke-linejoin", "round");
-        polyline.setAttribute("stroke-dasharray", "4, 6"); // Dotted line effect
         
         svg.appendChild(polyline);
     }

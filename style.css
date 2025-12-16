@@ -813,11 +813,11 @@ body {
 }
 
 .mode-high-contrast .map-scroll-wrapper {
-    filter: contrast(150%) grayscale(100%);
+    filter: contrast(150%);
 }
 
 .mode-high-contrast .map-path-line {
-    stroke: #fff;
+    stroke: #ffff00;
     stroke-width: 6;
 }
 
