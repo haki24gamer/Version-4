@@ -263,6 +263,18 @@ body {
     grid-column: span 2;
 }
 
+/* Darker variant for the restart control */
+#btn-restart-app {
+    background: #555; /* darker gray */
+    color: #fff;
+    border: 1px solid #444;
+}
+
+#btn-restart-app:active {
+    transform: scale(0.98);
+    background: #444;
+}
+
 .action-btn:active {
     transform: scale(0.98);
 }

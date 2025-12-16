@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
+    const btnRestartApp = document.getElementById('btn-restart-app');
     
     const appUi = document.getElementById('app-ui');
     const volumeBar = document.getElementById('volume-bar');
@@ -128,6 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     toggleVibration.addEventListener('change', updateUI);
+
+    if (btnRestartApp) {
+        btnRestartApp.addEventListener('click', () => {
+            showToast('🔄 Redémarrage...');
+            setTimeout(() => {
+                // Full reload to return to initial state
+                window.location.reload();
+            }, 400);
+        });
+    }
 
     toggleExplanations.addEventListener('change', () => {
         if (toggleExplanations.checked) {
