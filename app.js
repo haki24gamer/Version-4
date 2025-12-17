@@ -134,23 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Auto-open map when scenario is selected
+    // When a scenario is selected, show controls but do NOT auto-open the map
     scenarioSelect.addEventListener('change', (e) => {
         const selectedScenario = e.target.value;
         if (selectedScenario) {
             // Show controls
             scenarioControls.classList.remove('hidden');
-            // Open the map automatically only if modal not already open
-            const modalEl = document.getElementById('app-modal');
-            if (!modalEl || modalEl.classList.contains('hidden')) {
-                openMapWithNavigation();
-            } else {
-                // If map is already open, just re-render without resetting state
-                const mapContainer = document.getElementById('interactive-map');
-                if (mapContainer) renderMap('interactive-map', currentDestination);
-            }
-
-            showToast(`📍 Scénario "${scenarios[selectedScenario].label}" sélectionné. Choisissez une destination sur la carte.`);
+            // Do NOT open the map automatically — user must open it manually if desired
+            showToast(`📍 Scénario "${scenarios[selectedScenario].label}" sélectionné. Ouvrez la carte pour choisir une destination ou cliquez sur ▶️ Start pour lancer le scénario.`);
         } else {
             scenarioControls.classList.add('hidden');
             stopScenario();
@@ -170,6 +161,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Explicit map open button (does not auto-open when scenario is selected)
+    const btnOpenMap = document.getElementById('btn-open-map');
+    if (btnOpenMap) {
+        btnOpenMap.addEventListener('click', () => {
+            openMapWithNavigation();
+        });
+    }
 
     toggleVibration.addEventListener('change', updateUI);
 
