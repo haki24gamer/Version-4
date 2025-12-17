@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnRestartApp = document.getElementById('btn-restart-app');
     
     const appUi = document.getElementById('app-ui');
-    const volumeBar = document.getElementById('volume-bar');
     
     const stateMovement = document.getElementById('state-movement');
     const stateLight = document.getElementById('state-light');
@@ -48,6 +47,30 @@ document.addEventListener('DOMContentLoaded', () => {
         noisy: false,
         batteryLow: false
     };
+
+    // Transient volume popup element (created once)
+    const volumePopup = document.createElement('div');
+    volumePopup.className = 'volume-popup';
+    volumePopup.innerHTML = `
+        <div class="vol-icon">🔊</div>
+        <div class="vol-track"><div class="vol-level" style="height:0%"></div></div>
+    `;
+    // Append into phone UI so it positions relative to phone
+    appUi.appendChild(volumePopup);
+    const volLevelEl = volumePopup.querySelector('.vol-level');
+    let volumePopupTimeout = null;
+    let lastVolumePercent = -1;
+
+    function showVolumePopup(percent) {
+        // percent: 0-100
+        const h = Math.max(2, Math.min(100, Math.round(percent)));
+        volLevelEl.style.height = `${h}%`;
+        volumePopup.classList.add('show');
+        if (volumePopupTimeout) clearTimeout(volumePopupTimeout);
+        volumePopupTimeout = setTimeout(() => {
+            volumePopup.classList.remove('show');
+        }, 1200);
+    }
 
     // Load Data
     fetch('data.json')
@@ -239,14 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Noise Adaptation
         // Map noise 0-120 to width 0-100%
         const volumeWidth = Math.min(100, (noise / 120) * 100);
-        volumeBar.style.width = `${volumeWidth}%`;
+
+        // Show transient right-side popup when volume changes
+        if (typeof lastVolumePercent !== 'undefined' && Math.round(lastVolumePercent) !== Math.round(volumeWidth)) {
+            showVolumePopup(volumeWidth);
+        }
+        lastVolumePercent = volumeWidth;
         
         if (isNoisy) {
             appUi.classList.add('mode-noisy');
-            // Simulate volume boost visual
-            volumeBar.style.backgroundColor = '#ff0000';
+            // Popup shows prominence; persistent homepage bar removed
         } else {
-            volumeBar.style.backgroundColor = ''; // Reset to CSS default
+            // Nothing to reset for removed homepage bar
         }
 
         // 4. Battery Adaptation (Overrides others if critical)
