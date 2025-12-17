@@ -248,6 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
             stateUi.textContent = '📱 UI Standard';
         }
 
+        // Keep the map view in sync with speed changes (auto-zoom to user)
+        try { setMapZoomForSpeed(true); } catch (e) { /* noop if map not initialized */ }
+
         // 2. Brightness Adaptation
         if (isHighContrast) {
             appUi.classList.add('mode-high-contrast');
@@ -451,9 +454,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.innerHTML = ''; // Clear previous map
 
-        // Create Wrapper for scrolling/zooming
+        // Create Wrapper for scrolling/zooming (enable smooth transitions for zoom)
         const wrapper = document.createElement('div');
         wrapper.className = 'map-scroll-wrapper';
+        wrapper.style.transition = 'width 300ms ease, height 300ms ease';
         container.appendChild(wrapper);
 
         // 1. SVG Layer for Path and Roads
@@ -613,6 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. Zoom Controls Logic
         const btnZoomIn = document.getElementById('btn-zoom-in');
         const btnZoomOut = document.getElementById('btn-zoom-out');
+        const btnZoomUser = document.getElementById('btn-zoom-user');
         
         if (btnZoomIn && btnZoomOut) {
             // Determine initial zoom based on active mode
@@ -621,21 +626,67 @@ document.addEventListener('DOMContentLoaded', () => {
             if (appUi.classList.contains('mode-speed-2')) currentZoom = 150;
             if (appUi.classList.contains('mode-speed-3')) currentZoom = 200;
 
-            // Apply manual zoom
-            const updateZoom = () => {
+            // Apply manual zoom and center on user (supports smooth animation)
+            const centerOnUser = (smooth = true) => {
+                // Use rAF to ensure layout is updated after size changes
+                requestAnimationFrame(() => {
+                    const user = mapData.currentPosition;
+                    if (!user) return;
+
+                    const wrapperWidth = wrapper.scrollWidth;
+                    const wrapperHeight = wrapper.scrollHeight;
+
+                    // User position in pixels within the (scaled) wrapper
+                    const userX = (user.x / 100) * wrapperWidth;
+                    const userY = (user.y / 100) * wrapperHeight;
+
+                    const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                    const maxScrollTop = container.scrollHeight - container.clientHeight;
+
+                    let targetScrollLeft = Math.round(userX - container.clientWidth / 2);
+                    let targetScrollTop = Math.round(userY - container.clientHeight / 2);
+
+                    targetScrollLeft = Math.max(0, Math.min(maxScrollLeft, targetScrollLeft));
+                    targetScrollTop = Math.max(0, Math.min(maxScrollTop, targetScrollTop));
+
+                    if (smooth && container.scrollTo) {
+                        container.scrollTo({ left: targetScrollLeft, top: targetScrollTop, behavior: 'smooth' });
+                    } else {
+                        container.scrollLeft = targetScrollLeft;
+                        container.scrollTop = targetScrollTop;
+                    }
+                });
+            };
+
+            const updateZoom = (center = true, smooth = true) => {
                 wrapper.style.width = `${currentZoom}%`;
                 wrapper.style.height = `${currentZoom}%`;
+                if (center) centerOnUser(smooth);
             };
 
             btnZoomIn.addEventListener('click', () => {
                 currentZoom += 25;
-                updateZoom();
+                updateZoom(true, true);
             });
 
             btnZoomOut.addEventListener('click', () => {
                 currentZoom = Math.max(100, currentZoom - 25);
-                updateZoom();
+                updateZoom(true, true);
             });
+
+            // Zoom-to-user quick button (sets a comfortable zoom level and centers)
+            if (btnZoomUser) {
+                btnZoomUser.addEventListener('click', () => {
+                    currentZoom = Math.max(currentZoom, 200);
+                    updateZoom(true, true);
+                });
+            }
+
+            // Apply initial zoom & center (without animation so it feels immediate)
+            updateZoom(true, false);
+
+            // Apply initial zoom & center (so mode-based zoom centers on user)
+            updateZoom(true);
         }
     }
 
@@ -1053,6 +1104,52 @@ document.addEventListener('DOMContentLoaded', () => {
         executeStep(0);
     }
 
+    // Auto-zoom the map based on current speed mode and center on the user
+    function setMapZoomForSpeed(smooth = true) {
+        const mapContainer = document.getElementById('interactive-map');
+        if (!mapContainer) return;
+
+        const wrapper = mapContainer.querySelector('.map-scroll-wrapper');
+        if (!wrapper) return;
+
+        const appUi = document.getElementById('app-ui');
+        let targetZoom = 100;
+        if (appUi && appUi.classList.contains('mode-speed-2')) targetZoom = 150;
+        if (appUi && appUi.classList.contains('mode-speed-3')) targetZoom = 200;
+
+        // Apply zoom size
+        wrapper.style.width = `${targetZoom}%`;
+        wrapper.style.height = `${targetZoom}%`;
+
+        // Center on user after layout updates
+        requestAnimationFrame(() => {
+            const user = mapData.currentPosition;
+            if (!user) return;
+
+            const wrapperWidth = wrapper.scrollWidth;
+            const wrapperHeight = wrapper.scrollHeight;
+
+            const userX = (user.x / 100) * wrapperWidth;
+            const userY = (user.y / 100) * wrapperHeight;
+
+            const maxScrollLeft = mapContainer.scrollWidth - mapContainer.clientWidth;
+            const maxScrollTop = mapContainer.scrollHeight - mapContainer.clientHeight;
+
+            let targetScrollLeft = Math.round(userX - mapContainer.clientWidth / 2);
+            let targetScrollTop = Math.round(userY - mapContainer.clientHeight / 2);
+
+            targetScrollLeft = Math.max(0, Math.min(maxScrollLeft, targetScrollLeft));
+            targetScrollTop = Math.max(0, Math.min(maxScrollTop, targetScrollTop));
+
+            if (smooth && mapContainer.scrollTo) {
+                mapContainer.scrollTo({ left: targetScrollLeft, top: targetScrollTop, behavior: 'smooth' });
+            } else {
+                mapContainer.scrollLeft = targetScrollLeft;
+                mapContainer.scrollTop = targetScrollTop;
+            }
+        });
+    }
+
     function updateUserPositionOnMap() {
         const mapContainer = document.getElementById('interactive-map');
         if (!mapContainer) return;
@@ -1156,6 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="map-zoom-controls">
                     <button id="btn-zoom-in" class="zoom-btn">➕</button>
                     <button id="btn-zoom-out" class="zoom-btn">➖</button>
+                    <button id="btn-zoom-user" class="zoom-btn" title="Zoom to you">🎯</button>
                 </div>
             </div>
             <div id="map-info-panel" class="map-info-panel">
