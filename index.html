@@ -97,10 +97,14 @@
         <!-- Zone de Simulation (L'application Mockup) -->
         <main class="simulation-area">
             <div class="phone-mockup" id="app-ui">
-                <div class="status-bar">
+                <div class="status-bar" id="status-bar">
                     <span class="time">12:30</span>
-                    <span class="icons">📶 🔋</span>
+                    <div class="status-right">
+                        <span class="network" title="Signal">📶</span>
+                        <span class="battery" id="battery-top" title="Niveau de batterie">🔋 <span class="level">100%</span></span>
+                    </div>
                 </div>
+                <div id="status-notification" class="status-notification hidden" aria-live="assertive" role="status"></div>
                 
                 <div class="app-header">
                     <h1>NaviGo</h1>

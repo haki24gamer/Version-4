@@ -201,6 +201,50 @@ body {
     font-size: 12px;
 }
 
+.status-right {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.status-bar .battery {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:600;
+}
+
+.status-bar.battery-low {
+    background: linear-gradient(90deg, #3a1f1f, #4b1f1f);
+    box-shadow: inset 0 -3px 10px rgba(0,0,0,0.2);
+}
+
+.status-bar.battery-low .battery {
+    color: #ffd36b;
+}
+
+.status-notification {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    background: #fff3cd;
+    color: #7a4b00;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    z-index: 60;
+}
+
+.status-notification.hidden {
+    display:none;
+}
+
+.status-notification.persistent {
+    display:block;
+}
+
 .app-header {
     padding: 20px;
     display: flex;

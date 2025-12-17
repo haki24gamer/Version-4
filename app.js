@@ -61,6 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let volumePopupTimeout = null;
     let lastVolumePercent = -1;
 
+    // Top status elements (battery display + notifications)
+    const statusBarEl = document.getElementById('status-bar');
+    const batteryTopEl = document.getElementById('battery-top');
+    const batteryTopLevel = batteryTopEl ? batteryTopEl.querySelector('.level') : null;
+    const statusNotificationEl = document.getElementById('status-notification');
+
+    function showStatusNotification(msg, persistent = false) {
+        if (!statusNotificationEl) return;
+        statusNotificationEl.textContent = msg;
+        statusNotificationEl.classList.remove('hidden');
+        if (persistent) statusNotificationEl.classList.add('persistent');
+        else statusNotificationEl.classList.remove('persistent');
+    }
+    function hideStatusNotification() {
+        if (!statusNotificationEl) return;
+        statusNotificationEl.classList.add('hidden');
+        statusNotificationEl.classList.remove('persistent');
+    }
+
     function showVolumePopup(percent) {
         // percent: 0-100
         const h = Math.max(2, Math.min(100, Math.round(percent)));
@@ -279,10 +298,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 4. Battery Adaptation (Overrides others if critical)
+        // Update top status battery indicator
+        if (batteryTopLevel) batteryTopLevel.textContent = `${battery}%`;
+
         if (isBatteryLow) {
             appUi.classList.add('mode-battery-saver');
             // Force dark mode text update if needed
             stateLight.textContent = '🔋 Économie d\'énergie (Mode Sombre Forcé)';
+
+            // Top bar indicator and low battery notification
+            if (statusBarEl) statusBarEl.classList.add('battery-low');
+            if (!lastState.batteryLow) {
+                showToast(`⚠️ Batterie faible : ${battery}% — Pensez à recharger.`);
+                showStatusNotification(`⚠️ Batterie faible : ${battery}%`, true);
+            } else {
+                // update persistent notification text
+                if (statusNotificationEl && statusNotificationEl.classList.contains('persistent')) {
+                    statusNotificationEl.textContent = `⚠️ Batterie faible : ${battery}%`;
+                }
+            }
+        } else {
+            if (statusBarEl) statusBarEl.classList.remove('battery-low');
+            hideStatusNotification();
+            if (lastState.batteryLow) {
+                showToast(`🔋 Batterie : ${battery}% — Chargement OK`);
+            }
         }
 
         // 5. Vibration Simulation
