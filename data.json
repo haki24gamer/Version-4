@@ -31,26 +31,15 @@
       "noise": 85
     },
     "car": {
-      "label": "Voiture (Passager)",
+      "label": "🚗 Voiture",
       "speed": 90,
       "brightness": 50,
       "noise": 50
     }
   },
   "scenarios": {
-    "walk_to_drive": {
-      "label": "Marche puis Conduite",
-      "steps": [
-        { "duration": 1000, "desc": "🏠 L'utilisateur sort de chez lui", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 100 } },
-        { "duration": 4000, "desc": "🚶 Marche rapide vers le parking", "values": { "speed": 6, "noise": 50, "brightness": 80, "battery": 99 } },
-        { "duration": 2000, "desc": "🚗 Arrivée à la voiture, installation", "values": { "speed": 0, "noise": 20, "brightness": 50, "battery": 99 } },
-        { "duration": 5000, "desc": "🏙️ Démarrage et conduite en ville", "values": { "speed": 45, "noise": 60, "brightness": 50, "battery": 98 } },
-        { "duration": 6000, "desc": "🛣️ Accélération sur voie rapide", "values": { "speed": 90, "noise": 70, "brightness": 50, "battery": 97 } },
-        { "duration": 2000, "desc": "🏁 Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 95 } }
-      ]
-    },
     "bus": {
-      "label": "Bus",
+      "label": "🚌 Bus",
       "steps": [
         { "duration": 2000, "desc": "🏠 Départ de chez soi", "values": { "speed": 0, "noise": 45, "brightness": 80, "battery": 80 } },
         { "duration": 3000, "desc": "🚶 Marche vers l'arrêt de bus", "values": { "speed": 5, "noise": 65, "brightness": 80, "battery": 80 } },
@@ -60,18 +49,29 @@
         { "duration": 3000, "desc": "🏁 Descente et arrivée à destination", "values": { "speed": 0, "noise": 50, "brightness": 70, "battery": 77 } }
       ]
     },
+    "walk_to_drive": {
+      "label": "🚗 Voiture",
+      "steps": [
+        { "duration": 1000, "desc": "🏠 L'utilisateur sort de chez lui", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 100 } },
+        { "duration": 4000, "desc": "🚶 Marche rapide vers le parking", "values": { "speed": 6, "noise": 50, "brightness": 80, "battery": 99 } },
+        { "duration": 2000, "desc": "🚗 Arrivée à la voiture, installation", "values": { "speed": 0, "noise": 20, "brightness": 50, "battery": 99 } },
+        { "duration": 5000, "desc": "🏙️ Démarrage et conduite en ville", "values": { "speed": 45, "noise": 60, "brightness": 50, "battery": 98 } },
+        { "duration": 6000, "desc": "🛣️ Accélération sur voie rapide", "values": { "speed": 90, "noise": 70, "brightness": 50, "battery": 97 } },
+        { "duration": 2000, "desc": "🏁 Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 95 } }
+      ]
+    },
 
     "walking_mode": {
-      "label": "Mode de marche",
+      "label": "🚶 Marche",
       "steps": [
         { "duration": 1000, "desc": "🏠 Début de la promenade", "values": { "speed": 0, "noise": 30, "brightness": 70, "battery": 100 } },
+        { "duration": 4000, "desc": "🚶 Marche normale", "values": { "speed": 4, "noise": 40, "brightness": 80, "battery": 99 } },
         { "duration": 8000, "desc": "🚶‍♂️ Marche régulière en milieu urbain", "values": { "speed": 5, "noise": 45, "brightness": 85, "battery": 99 } },
-        { "duration": 2000, "desc": "☕ Petite pause sur un banc", "values": { "speed": 0, "noise": 25, "brightness": 80, "battery": 98 } },
         { "duration": 3000, "desc": "🏁 Fin de la promenade, arrivée", "values": { "speed": 0, "noise": 30, "brightness": 75, "battery": 97 } }
       ]
     },
     "manual_control": {
-      "label": "Contrôle Manuel",
+      "label": "🎮 Contrôle manuel",
       "type": "manual",
       "steps": [
         { "duration": 999999, "desc": "🎮 Mode Manuel : Ajustez les curseurs vous-même", "values": { "speed": 0, "noise": 0, "brightness": 50, "battery": 100 } }
@@ -175,7 +175,7 @@
       { "id": "p4", "x": 10, "y": 55, "label": "Parc Central", "type": "nature", "nodeId": "n16" },
       { "id": "p5", "x": 50, "y": 40, "label": "Centre Commercial", "type": "shop", "nodeId": "n13" },
       { "id": "p6", "x": 30, "y": 10, "label": "Hôtel de Ville", "type": "culture", "nodeId": "n2" },
-      { "id": "p7", "x": 70, "y": 40, "label": "Hôpital", "type": "transport", "nodeId": "n14" },
+        { "id": "p7", "x": 58, "y": 40, "label": "Hôpital", "type": "health", "nodeId": "n13" },
       { "id": "p8", "x": 10, "y": 85, "label": "Stade", "type": "nature", "nodeId": "n26" },
       { "id": "p9", "x": 50, "y": 70, "label": "Place du Marché", "type": "shop", "nodeId": "n23" },
       { "id": "p10", "x": 90, "y": 55, "label": "Université", "type": "culture", "nodeId": "n20" },

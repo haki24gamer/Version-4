@@ -62,10 +62,23 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(err => console.error('Erreur chargement JSON:', err));
 
     function populateTransportOptions() {
+        const transportIcons = {
+            static: '🏠',
+            walking: '🚶',
+            cycling: '🚲',
+            bus: '🚌',
+            metro: '🚇',
+            car: '🚗',
+            custom: '⚙️'
+        };
+
         for (const [key, value] of Object.entries(presets)) {
             const option = document.createElement('option');
             option.value = key;
-            option.textContent = value.label;
+            const icon = transportIcons[key] || transportIcons.custom;
+            const labelText = value.label || '';
+            const alreadyHasIcon = Object.values(transportIcons).some(ic => labelText.startsWith(ic));
+            option.textContent = alreadyHasIcon ? labelText : `${icon} ${labelText}`;
             transportSelect.appendChild(option);
         }
     }
@@ -104,9 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedScenario) {
             // Show controls
             scenarioControls.classList.remove('hidden');
-            
-            // Open the map automatically
-            openMapWithNavigation();
+            // Open the map automatically only if modal not already open
+            const modalEl = document.getElementById('app-modal');
+            if (!modalEl || modalEl.classList.contains('hidden')) {
+                openMapWithNavigation();
+            } else {
+                // If map is already open, just re-render without resetting state
+                const mapContainer = document.getElementById('interactive-map');
+                if (mapContainer) renderMap('interactive-map', currentDestination);
+            }
+
             showToast(`📍 Scénario "${scenarios[selectedScenario].label}" sélectionné. Choisissez une destination sur la carte.`);
         } else {
             scenarioControls.classList.add('hidden');
@@ -543,6 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (poi.type === "culture") icon = "🏛️";
             if (poi.type === "nature") icon = "🌳";
             if (poi.type === "shop") icon = "🛒";
+            if (poi.type === "health") icon = "🏥";
 
             const marker = createMarker(poi.x, poi.y, icon, poi.label, "poi");
             
@@ -780,8 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeScenarioInterval) cancelAnimationFrame(activeScenarioInterval);
         
         scenarioStatus.classList.remove('hidden');
-        transportSelect.disabled = !isManual; // Enable transport select in manual mode if desired, or keep disabled
-        scenarioSelect.disabled = true;
+        transportSelect.disabled = !isManual; // Enable transport select in manual mode if desired
         isScenarioRunning = true;
 
         // Update Button to Stop
@@ -841,7 +861,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     scenarioStatus.classList.add('hidden');
                     transportSelect.disabled = false;
-                    scenarioSelect.disabled = false;
                     isScenarioRunning = false;
 
                     // Reset Button
@@ -851,8 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnScenarioToggle.style.backgroundColor = "";
 
                     // Reset position for next navigation
-                    mapData.currentPosition = { x: 50, y: 85, label: "Vous" };
-                    currentDestination = null;
+                    // Keep currentPosition at destination so subsequent navigations start from here
                 }, 3000);
                 return;
             }
