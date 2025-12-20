@@ -1,0 +1,25 @@
+
+/* Battery Saver Mode - Services Adaptation */
+.mode-battery-saver .service-item[data-service="Météo"],
+.mode-battery-saver .service-item[data-service="Actualités"] {
+    display: none;
+}
+
+.mode-battery-saver .service-item[data-service="Urgence"] {
+    background-color: #c0392b;
+    border-color: #e74c3c;
+}
+.mode-battery-saver .service-item[data-service="Urgence"] .s-label,
+.mode-battery-saver .service-item[data-service="Urgence"] .s-icon {
+    color: #fff;
+}
+
+/* Dim other services slightly to indicate power saving */
+.mode-battery-saver .service-item:not([data-service="Urgence"]) {
+    opacity: 0.7;
+    border-color: #444;
+    background-color: #222; /* Darker bg for battery saver */
+}
+.mode-battery-saver .service-item:not([data-service="Urgence"]) .s-label {
+    color: #aaa;
+}

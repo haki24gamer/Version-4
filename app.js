@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleExplanations = document.getElementById('toggle-explanations');
     const toggleVibration = document.getElementById('toggle-vibration');
+    const toggleVoice = document.getElementById('toggle-voice');
     const btnRestartApp = document.getElementById('btn-restart-app');
     
     const appUi = document.getElementById('app-ui');
@@ -127,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateScenarioOptions() {
         for (const [key, value] of Object.entries(scenarios)) {
+            // Skip scenarios explicitly marked as disabled (used to "comment out" temporary options)
+            if (value && value.disabled) continue;
             const option = document.createElement('option');
             option.value = key;
             option.textContent = value.label;
@@ -311,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!lastState.batteryLow) {
                 showToast(`⚠️ Batterie faible : ${battery}% — Pensez à recharger.`);
                 showStatusNotification(`⚠️ Batterie faible : ${battery}%`, true);
+                speak(`Attention, batterie faible. ${battery} pourcent.`);
             } else {
                 // update persistent notification text
                 if (statusNotificationEl && statusNotificationEl.classList.contains('persistent')) {
@@ -392,6 +396,21 @@ document.addEventListener('DOMContentLoaded', () => {
         toastTimeout = setTimeout(() => {
             toast.classList.remove('show');
         }, 2000);
+    }
+
+    // --- Text-to-Speech (TTS) ---
+    function speak(text, force = false) {
+        if (!toggleVoice || (!toggleVoice.checked && !force)) return;
+        
+        // Cancel current speech if any
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'fr-FR';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        window.speechSynthesis.speak(utterance);
     }
 
     // --- Modal Logic ---
@@ -809,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         svg.appendChild(polyline);
     }
 
-    function updateMapInfo(dest, pathIds = [], progress = 0) {
+    function updateMapInfo(dest, pathIds = [], progress = 0, instruction = null) {
         const infoPanel = document.getElementById('map-info-content');
         if (!infoPanel) return;
 
@@ -857,13 +876,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isNavigating) {
             // Show navigation progress UI
+            let instructionHtml = '';
+            if (instruction) {
+                // Google Maps Style Banner
+                instructionHtml = `
+                <div style="
+                    background-color: #00796b; 
+                    color: white; 
+                    padding: 15px; 
+                    border-radius: 8px; 
+                    margin-bottom: 10px; 
+                    display: flex; 
+                    align-items: center; 
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                ">
+                    <div style="font-size: 2.5em; margin-right: 15px;">
+                        ${instruction.icon}
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9em; opacity: 0.9;">Dans ${instruction.dist} m</div>
+                        <div style="font-size: 1.2em; font-weight: bold;">${instruction.text.replace('↪️ ', '').replace('↩️ ', '')}</div>
+                    </div>
+                </div>`;
+            }
+
             infoPanel.innerHTML = `
-                <h3>🧭 Vers : ${dest.label}</h3>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <p>📏 <strong>${Math.round(dist)} m</strong></p>
-                    <p>⏱️ <strong>${time > 0 ? time + ' min' : 'Arrivée!'}</strong></p>
+                ${instructionHtml}
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <h3 style="margin:0; font-size: 1.1em; color: #333;">${time > 0 ? time + ' min' : 'Arrivé'}</h3>
+                        <div style="color: #666; font-size: 0.9em;">${Math.round(dist)} m • ${dest.label}</div>
+                    </div>
+                    <button id="btn-stop-nav" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8em;">Quitter</button>
                 </div>
             `;
+            
+            // Re-attach stop listener
+            const btnStop = infoPanel.querySelector('#btn-stop-nav');
+            if (btnStop) {
+                btnStop.addEventListener('click', () => {
+                    stopScenario();
+                    // Close map or reset
+                    renderMap('interactive-map'); // Clear path
+                    updateMapInfo(dest); // Reset info
+                });
+            }
         } else {
             // Show destination selection UI
             infoPanel.innerHTML = `
@@ -892,6 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scenarioSelect.disabled = false;
         isNavigating = false;
         isScenarioRunning = false;
+        currentScenarioKey = null;
 
         // Reset Button
         btnScenarioToggle.textContent = "▶️ Start";
@@ -907,9 +965,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scenarioDesc) scenarioDesc.textContent = "Arrêté";
     }
 
+    function calculateTurn(p1, p2, p3) {
+        // Vector v1: p1 -> p2
+        const v1x = p2.x - p1.x;
+        const v1y = p2.y - p1.y;
+        
+        // Vector v2: p2 -> p3
+        const v2x = p3.x - p2.x;
+        const v2y = p3.y - p2.y;
+        
+        const angle1 = Math.atan2(v1y, v1x);
+        const angle2 = Math.atan2(v2y, v2x);
+        
+        let diff = angle2 - angle1;
+        
+        // Normalize to [-PI, PI]
+        while (diff <= -Math.PI) diff += 2 * Math.PI;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        
+        // Threshold for turn (e.g., 30 degrees = ~0.5 radians)
+        const threshold = 0.5;
+        
+        if (diff > threshold) return "↪️ Tournez à droite";
+        if (diff < -threshold) return "↩️ Tournez à gauche";
+        return null; // Straight
+    }
+
+    let currentScenarioKey = null; // Track running scenario
+
     function runScenario(scenarioKey) {
         if (!scenarios[scenarioKey]) return;
         
+        currentScenarioKey = scenarioKey; // Store current key
         const scenario = scenarios[scenarioKey];
         const steps = scenario.steps;
         const isManual = scenario.type === 'manual';
@@ -951,6 +1038,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let traveledMeters = 0;
         let lastFrameTime = Date.now();
+        
+        let lastInstructionNodeIndex = -1;
+        let currentInstruction = null;
 
         const executeStep = (index) => {
             if (index >= steps.length) {
@@ -979,6 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     scenarioStatus.classList.add('hidden');
                     transportSelect.disabled = false;
                     isScenarioRunning = false;
+                    currentScenarioKey = null;
 
                     // Reset Button
                     btnScenarioToggle.textContent = "▶️ Start";
@@ -994,6 +1085,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const step = steps[index];
             scenarioDesc.textContent = step.desc;
+            
+            // Vocalize step description
+            speak(step.desc);
             
             // Target values
             const targetSpeed = step.values.speed;
@@ -1062,13 +1156,47 @@ document.addEventListener('DOMContentLoaded', () => {
                         let targetY = userStartPosition.y;
                         
                         // Find current segment
-                        for(const seg of segments) {
+                        let currentSegmentIndex = -1;
+                        for(let i=0; i<segments.length; i++) {
+                            const seg = segments[i];
                             if (currentDist >= seg.accumStart && currentDist <= seg.accumStart + seg.length) {
                                 const segProgress = (currentDist - seg.accumStart) / seg.length;
                                 targetX = seg.start.x + (seg.end.x - seg.start.x) * segProgress;
                                 targetY = seg.start.y + (seg.end.y - seg.start.y) * segProgress;
+                                currentSegmentIndex = i;
                                 break;
                             }
+                        }
+                        
+                        // Turn Detection (Real-time)
+                        currentInstruction = null; // Reset every frame, unless found
+                        
+                        if (currentSegmentIndex !== -1 && currentSegmentIndex < segments.length - 1) {
+                             const seg = segments[currentSegmentIndex];
+                             const distToEnd = (seg.accumStart + seg.length) - currentDist;
+                             const distMeters = Math.round(distToEnd * 20); // Scale factor 20
+                             
+                             // Look ahead for turn
+                             if (distMeters < 100) { // Within 100m
+                                 const p1 = seg.start;
+                                 const p2 = seg.end;
+                                 const p3 = segments[currentSegmentIndex+1].end;
+                                 
+                                 const turn = calculateTurn(p1, p2, p3);
+                                 if (turn) {
+                                     currentInstruction = {
+                                         text: turn,
+                                         dist: distMeters,
+                                         icon: turn.includes('gauche') ? '↰' : '↱'
+                                     };
+                                     
+                                     // Speak only once per turn (at 40m mark)
+                                     if (distMeters < 40 && lastInstructionNodeIndex !== currentSegmentIndex) {
+                                         speak(`Dans ${distMeters} mètres, ${turn}`);
+                                         lastInstructionNodeIndex = currentSegmentIndex;
+                                     }
+                                 }
+                             }
                         }
                         
                         // Handle end of path (floating point errors)
@@ -1090,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     updateUserPositionOnMap();
-                    updateMapInfo(currentDestination, currentPath, overallProgress);
+                    updateMapInfo(currentDestination, currentPath, overallProgress, currentInstruction);
                 }
                 
                 updateUI();
@@ -1247,6 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`🚀 Navigation démarrée vers ${dest.label}`);
+        speak(`Navigation démarrée vers ${dest.label}`);
 
         // Check if a scenario is selected
         const selectedScenario = scenarioSelect.value;
@@ -1319,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             // Find the label or icon to describe the action
             let actionName = "Action";
-            const label = btn.querySelector('.label') || btn.querySelector('.nav-label');
+            const label = btn.querySelector('.label') || btn.querySelector('.nav-label') || btn.querySelector('.s-label');
             
             if (label) {
                 actionName = label.textContent.trim();
@@ -1334,7 +1463,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Specific Actions
-            if (actionName === "Itinéraire" || actionName === "Carte") {
+            if (btn.classList.contains('service-item')) {
+                 showToast(`ℹ️ Service "${actionName}" : Bientôt disponible`);
+                 speak(`Ouverture du service ${actionName}`);
+            } else if (actionName === "Itinéraire" || actionName === "Carte") {
                 openMapWithNavigation();
             } else if (actionName === "Billets") {
                 openModal("Mes Billets", `
@@ -1349,12 +1481,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 openModal("Signalement", `
                     <p>Que souhaitez-vous signaler ?</p>
                     <div class="report-grid">
-                        <div class="report-btn">🕒<br>Retard</div>
-                        <div class="report-btn">🧹<br>Saleté</div>
-                        <div class="report-btn">🔊<br>Bruit</div>
-                        <div class="report-btn">⚠️<br>Incident</div>
+                        <div class="report-btn" data-type="Retard">🕒<br>Retard</div>
+                        <div class="report-btn" data-type="Saleté">🧹<br>Saleté</div>
+                        <div class="report-btn" data-type="Bruit">🔊<br>Bruit</div>
+                        <div class="report-btn" data-type="Incident">⚠️<br>Incident</div>
                     </div>
                 `);
+                
+                // Add listeners for report buttons
+                const reportBtns = modalBody.querySelectorAll('.report-btn');
+                reportBtns.forEach(rBtn => {
+                    rBtn.addEventListener('click', () => {
+                        const type = rBtn.getAttribute('data-type');
+                        const msg = `Signalement envoyé : ${type}`;
+                        showToast(msg);
+                        speak(msg);
+                        
+                        // Visual feedback
+                        rBtn.style.backgroundColor = "#e74c3c";
+                        rBtn.style.color = "white";
+                        
+                        setTimeout(() => {
+                            modal.classList.add('hidden');
+                        }, 1000);
+                    });
+                });
             } else if (actionName === "Paramètres") {
                 // Keep toast for settings
                 showToast(`Simulation : "${actionName}" activé`);

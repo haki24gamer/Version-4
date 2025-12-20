@@ -1029,3 +1029,191 @@ body {
     background: rgba(0,0,0,0.85);
     border: 2px solid #fff;
 }
+/* Services Section */
+.services-section {
+    margin-top: 10px;
+}
+
+.services-section h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #7f8c8d;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.service-item {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 10px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.service-item:hover {
+    background: #f9f9f9;
+}
+
+.service-item:active {
+    transform: scale(0.95);
+}
+
+.s-icon {
+    font-size: 1.5rem;
+}
+
+.s-label {
+    font-size: 0.7rem;
+    color: #555;
+    text-align: center;
+}
+
+/* Map App Name Overlay */
+.map-app-name {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 5;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+/* Adaptation for Services Section based on Speed Modes */
+
+/* Speed Level 1: Moderate Speed -> Larger Text */
+.mode-speed-1 .service-item {
+    padding: 15px 10px;
+}
+.mode-speed-1 .s-icon {
+    font-size: 2rem;
+}
+.mode-speed-1 .s-label {
+    font-size: 0.9rem;
+}
+
+/* Speed Level 2: Fast Speed -> 2 Columns, Bigger Buttons */
+.mode-speed-2 .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+.mode-speed-2 .service-item {
+    padding: 20px;
+}
+.mode-speed-2 .s-icon {
+    font-size: 2.5rem;
+}
+.mode-speed-2 .s-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* Speed Level 3: High Speed -> 1 Column, XXL Buttons */
+.mode-speed-3 .services-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+.mode-speed-3 .service-item {
+    padding: 25px;
+    flex-direction: row; /* Horizontal layout for 1 column */
+    justify-content: center;
+    gap: 20px;
+}
+.mode-speed-3 .s-icon {
+    font-size: 3rem;
+}
+.mode-speed-3 .s-label {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* Adaptation for Services Section based on Light/Contrast Modes */
+
+/* Dark Mode */
+.mode-dark .service-item {
+    background: #2c3e50;
+    border-color: #444;
+}
+
+.mode-dark .service-item:hover {
+    background: #34495e;
+}
+
+.mode-dark .s-label {
+    color: #ecf0f1;
+}
+
+.mode-dark .services-section h3 {
+    color: #bdc3c7;
+}
+
+/* High Contrast Mode */
+.mode-high-contrast .service-item {
+    background: #000;
+    border: 2px solid #fff;
+}
+
+.mode-high-contrast .service-item:hover {
+    background: #222;
+    text-decoration: underline;
+}
+
+.mode-high-contrast .s-label {
+    color: #fff;
+    font-weight: bold;
+}
+
+.mode-high-contrast .services-section h3 {
+    color: #fff;
+    text-transform: uppercase;
+    text-decoration: underline;
+}
+
+/* Battery Saver Mode - Services Adaptation */
+.mode-battery-saver .service-item[data-service="Météo"],
+.mode-battery-saver .service-item[data-service="Actualités"] {
+    display: none;
+}
+
+.mode-battery-saver .service-item[data-service="Urgence"] {
+    background-color: #c0392b;
+    border-color: #e74c3c;
+    animation: pulse-red 2s infinite;
+}
+.mode-battery-saver .service-item[data-service="Urgence"] .s-label,
+.mode-battery-saver .service-item[data-service="Urgence"] .s-icon {
+    color: #fff;
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+/* Dim other services slightly to indicate power saving */
+.mode-battery-saver .service-item:not([data-service="Urgence"]) {
+    opacity: 0.5;
+    border-color: #444;
+    background-color: #222; /* Darker bg for battery saver */
+    pointer-events: none; /* Disable interaction for non-essential in critical mode */
+}
+.mode-battery-saver .service-item:not([data-service="Urgence"]) .s-label {
+    color: #aaa;
+}

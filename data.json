@@ -61,13 +61,41 @@
       ]
     },
 
+    "urban_day_loop": {
+      "label": "🌇 Boucle urbaine — calme puis pics d'activité",
+      "steps": [
+        { "duration": 1500, "desc": "🏠 Matin calme : sortie de la maison", "values": { "speed": 0, "noise": 25, "brightness": 40, "battery": 100 } },
+        { "duration": 3000, "desc": "🚶 Promenade matinale : allure tranquille", "values": { "speed": 4, "noise": 35, "brightness": 60, "battery": 99 } },
+        { "duration": 4000, "desc": "🚌 Zone de trafic : le bruit ambiant augmente", "values": { "speed": 20, "noise": 75, "brightness": 80, "battery": 98 } },
+        { "duration": 2000, "desc": "🌤️ Pic de lumière (plein soleil)", "values": { "speed": 20, "noise": 80, "brightness": 100, "battery": 97 } },
+        { "duration": 5000, "desc": "🚲 Accélération : traversée rapide", "values": { "speed": 40, "noise": 85, "brightness": 90, "battery": 95 } },
+        { "duration": 3000, "desc": "🛣️ Voie rapide : vitesse élevée", "values": { "speed": 90, "noise": 90, "brightness": 70, "battery": 93 } },
+        { "duration": 2000, "desc": "🌫️ Tunnel : obscurité et bruit amplifié", "values": { "speed": 90, "noise": 95, "brightness": 20, "battery": 92 } },
+        { "duration": 4000, "desc": "🌳 Parc apaisé : ralentissement et calme", "values": { "speed": 5, "noise": 30, "brightness": 50, "battery": 90 } },
+        { "duration": 3000, "desc": "🌆 Soirée : lumière douce, bruit réduit", "values": { "speed": 0, "noise": 25, "brightness": 30, "battery": 88 } }
+      ]
+    },
+
     "walking_mode": {
       "label": "🚶 Marche",
+      "disabled": true,
       "steps": [
         { "duration": 1000, "desc": "🏠 Début de la promenade", "values": { "speed": 0, "noise": 30, "brightness": 70, "battery": 100 } },
         { "duration": 4000, "desc": "🚶 Marche normale", "values": { "speed": 4, "noise": 40, "brightness": 80, "battery": 99 } },
         { "duration": 8000, "desc": "🚶‍♂️ Marche régulière en milieu urbain", "values": { "speed": 5, "noise": 45, "brightness": 85, "battery": 99 } },
         { "duration": 3000, "desc": "🏁 Fin de la promenade, arrivée", "values": { "speed": 0, "noise": 30, "brightness": 75, "battery": 97 } }
+      ]
+    },
+    "multimodal_demo": {
+      "label": "🔄 Multimodal (Marche -> Bus -> Voiture)",
+      "steps": [
+        { "duration": 2000, "desc": "🏠 Départ : Vous êtes chez vous", "values": { "speed": 0, "noise": 30, "brightness": 50, "battery": 100 } },
+        { "duration": 4000, "desc": "🚶 Marche vers l'arrêt de bus", "values": { "speed": 5, "noise": 50, "brightness": 80, "battery": 99 } },
+        { "duration": 2000, "desc": "🚏 Attente du bus", "values": { "speed": 0, "noise": 60, "brightness": 70, "battery": 98 } },
+        { "duration": 6000, "desc": "🚌 Trajet en Bus", "values": { "speed": 45, "noise": 80, "brightness": 60, "battery": 97 } },
+        { "duration": 3000, "desc": "🚶 Correspondance : Marche vers le parking", "values": { "speed": 5, "noise": 55, "brightness": 85, "battery": 96 } },
+        { "duration": 6000, "desc": "🚗 Trajet en Voiture", "values": { "speed": 90, "noise": 65, "brightness": 50, "battery": 95 } },
+        { "duration": 2000, "desc": "🏁 Arrivée à destination", "values": { "speed": 0, "noise": 30, "brightness": 60, "battery": 94 } }
       ]
     },
     "manual_control": {
